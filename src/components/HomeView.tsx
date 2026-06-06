@@ -25,31 +25,31 @@ export default function HomeView({
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight md:text-3xl">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start md:items-center gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 tracking-tight break-words">
             Welcome Back, {profileName}
           </h2>
-          <p className="text-[#6b7280] font-sans text-sm mt-0.5">
+          <p className="text-[#6b7280] font-sans text-xs sm:text-sm mt-0.5">
             Ready to keep studying for your citizenship interview?
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-gray-50 text-gray-700 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{stats.activeStreak} Day Streak</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 bg-gray-50 text-gray-700 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-gray-200 text-[10px] sm:text-xs font-medium whitespace-nowrap">
+            <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
+            <span>{stats.activeStreak} Streak</span>
           </div>
-          <div className="w-9 h-9 rounded-full bg-primary-container text-primary font-bold text-xs flex items-center justify-center border border-primary/10">
+          <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-primary-container text-primary font-bold text-[10px] sm:text-xs flex items-center justify-center border border-primary/10 shrink-0">
             {profileName.substring(0, 2).toUpperCase()}
           </div>
         </div>
       </div>
 
       
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <section className="md:col-span-8 bg-white rounded-xl border border-[#e5e7eb] p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <section className="lg:col-span-2 bg-white rounded-xl border border-[#e5e7eb] p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
           {/* Circular progress visual */}
-          <div className="relative w-36 h-36 flex-shrink-0 flex items-center justify-center">
+          <div className="relative w-28 sm:w-32 md:w-36 h-28 sm:h-32 md:h-36 flex-shrink-0 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
               <circle
                 className="text-gray-100"
@@ -74,42 +74,42 @@ export default function HomeView({
               ></circle>
             </svg>
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-gray-900">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
                 {prepPercentage}%
               </span>
-              <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Mastery</span>
+              <span className="text-[8px] sm:text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Mastery</span>
             </div>
           </div>
 
-          <div className="flex-grow z-10 text-center md:text-left space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">
+          <div className="flex-grow z-10 text-center sm:text-left space-y-2 sm:space-y-3 min-w-0">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900">
               USCIS Civics Test Progress
             </h3>
-            <div className="flex items-baseline justify-center md:justify-start gap-1">
-              <span className="text-3xl font-bold text-[#2563eb]">
+            <div className="flex items-baseline justify-center sm:justify-start gap-1 flex-wrap">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#2563eb]">
                 {stats.masteredQuestionsCount}
               </span>
-              <span className="text-[#6b7280] font-sans text-xs">
+              <span className="text-[#6b7280] font-sans text-[10px] sm:text-xs">
                 / 100 Questions Mastered
               </span>
             </div>
             
-            <p className="text-xs text-gray-400 font-sans leading-relaxed">
+            <p className="text-[10px] sm:text-xs text-gray-400 font-sans leading-relaxed">
               Based on your flashcards progress. Study consistently to push this up to 100% before your exam.
             </p>
 
-            <div className="pt-1 flex flex-col sm:flex-row gap-2 justify-center md:justify-start">
+            <div className="pt-1 flex flex-col xs:flex-row gap-2 justify-center sm:justify-start w-full sm:w-auto">
               <button
                 onClick={onStartPractice}
                 id="resume-study"
-                className="bg-primary hover:bg-primary-hover text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors active:scale-95 cursor-pointer"
+                className="bg-primary hover:bg-primary-hover text-white font-medium px-3 sm:px-4 py-2 rounded-lg text-xs transition-colors active:scale-95 cursor-pointer whitespace-nowrap"
               >
                 Resume Study
               </button>
               <button
                 onClick={() => onChangeView("progress")}
                 id="view-analytics"
-                className="border border-[#e5e7eb] text-gray-700 hover:bg-gray-50 font-medium px-4 py-2 rounded-lg text-xs transition-colors cursor-pointer"
+                className="border border-[#e5e7eb] text-gray-700 hover:bg-gray-50 font-medium px-3 sm:px-4 py-2 rounded-lg text-xs transition-colors cursor-pointer whitespace-nowrap"
               >
                 View Analytics
               </button>
@@ -117,36 +117,36 @@ export default function HomeView({
           </div>
         </section>
 
-        <section className="md:col-span-4 bg-white rounded-xl p-6 border border-[#e5e7eb] flex flex-col justify-between">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1.5 text-primary">
-                <PlayCircle className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider font-sans select-none text-primary">
+        <section className="lg:col-span-1 bg-white rounded-xl p-4 sm:p-6 border border-[#e5e7eb] flex flex-col justify-between min-h-min\">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex justify-between items-center gap-2\">
+              <div className="flex items-center gap-1.5 text-primary min-w-0\">
+                <PlayCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4 shrink-0\" />
+                <span className=\"text-[9px] sm:text-[10px] font-bold uppercase tracking-wider font-sans select-none text-primary\">
                   Next Up
                 </span>
               </div>
-              <span className="bg-primary-container text-primary text-[10px] font-bold px-2 py-0.5 rounded-full select-none">
+              <span className=\"bg-primary-container text-primary text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full select-none shrink-0\">
                 History
               </span>
             </div>
 
             <div className="space-y-1">
-              <h4 className="text-md font-bold text-gray-900 select-none">
+              <h4 className="text-sm sm:text-base font-bold text-gray-900 select-none break-words">
                 American History: 1800s
               </h4>
-              <p className="text-xs text-[#6b7280] leading-relaxed font-sans">
+              <p className="text-[10px] sm:text-xs text-[#6b7280] leading-relaxed font-sans">
                 Review key questions about the Civil War, Abraham Lincoln, and major occurrences in the 19th century.
               </p>
             </div>
 
-            <div className="space-y-1.5 pt-1 text-gray-600 text-xs font-medium">
+            <div className="space-y-1.5 pt-1 text-gray-600 text-[10px] sm:text-xs font-medium">
               <div className="flex items-center gap-2">
-                <Award className="w-3.5 h-3.5 text-primary" />
+                <Award className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0 text-primary\" />
                 <span>10 Questions</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-primary" />
+                <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0 text-primary\" />
                 <span>Est. 15 mins</span>
               </div>
             </div>

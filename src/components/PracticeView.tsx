@@ -364,8 +364,8 @@ export default function PracticeView({
           <span>Module: {currentQuestion.category}</span>
         </div>
 
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <h3 className="text-md md:text-lg font-bold text-gray-900 leading-normal flex-grow">
+        <div className="flex items-start justify-between gap-3 sm:gap-4 mb-5">
+          <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 leading-snug flex-grow min-w-0">
             {currentQuestion.question}
           </h3>
           <button
@@ -382,63 +382,64 @@ export default function PracticeView({
                 );
               }
             }}
-            className={`p-2.5 rounded-xl border transition-all cursor-pointer shrink-0 ${
+            className={`p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer shrink-0 ${
               isSpeaking
                 ? "bg-[#eff6ff] text-[#2563eb] border-blue-200 animate-pulse"
                 : "bg-gray-50 text-gray-400 border-gray-100 hover:text-gray-700 hover:bg-gray-100"
             }`}
             title="Listen to question read aloud"
           >
-            <Volume2 className="w-4 h-4" />
+            <Volume2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
           </button>
         </div>
 
         {/* Buttons to ask AI or change settings */}
-        <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 mb-6 space-y-3 font-sans">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div className="bg-gray-50/50 p-3 sm:p-4 rounded-xl border border-gray-100 mb-6 space-y-3 font-sans">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 sm:gap-3 flex-wrap">
             {/* Ask Enyi AI Button */}
             <button
               onClick={() => handleAskEnyiAI()}
               disabled={loadingAi}
-              className="flex items-center justify-center gap-1.5 bg-primary text-white hover:bg-primary-hover disabled:opacity-50 transition-colors font-bold text-xs py-2 px-3.5 rounded-lg shrink-0 cursor-pointer shadow-sm active:scale-95 uppercase tracking-wide"
+              className="flex items-center justify-center gap-1 sm:gap-1.5 bg-primary text-white hover:bg-primary-hover disabled:opacity-50 transition-colors font-bold text-[10px] sm:text-xs py-1.5 sm:py-2 px-3 sm:px-3.5 rounded-lg shrink-0 cursor-pointer shadow-sm active:scale-95 uppercase tracking-wide"
             >
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-              {loadingAi ? "Loading..." : "Ask Enyi"}
+              <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-white" />
+              <span className="hidden xs:inline">{loadingAi ? "Loading..." : "Ask Enyi"}</span>
+              <span className="xs:hidden">{loadingAi ? "..." : "Enyi"}</span>
             </button>
 
             {/* Explanation style buttons */}
-            <div className="flex items-center gap-1 bg-white border border-gray-200/80 rounded-lg p-0.5 shrink-0">
+            <div className="flex items-center gap-1 bg-white border border-gray-200/80 rounded-lg p-0.5 shrink-0 text-[9px] sm:text-[10px]">
               <button
                 type="button"
                 onClick={() => handleStyleChange("normal")}
-                className={`py-1 px-2 text-[10px] font-bold rounded-md cursor-pointer transition-all ${
+                className={`py-1 px-1.5 sm:px-2 text-[9px] sm:text-[10px] font-bold rounded-md cursor-pointer transition-all whitespace-nowrap ${
                   explanationStyle === "normal" ? "bg-primary text-white" : "text-gray-500 hover:text-gray-800"
                 }`}
               >
-                Explain Normally
+                Normal
               </button>
               <button
                 type="button"
                 id="btn-explain-simply"
                 onClick={() => handleStyleChange("simple")}
-                className={`py-1 px-2 text-[10px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
+                className={`py-1 px-1.5 sm:px-2 text-[9px] sm:text-[10px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-0.5 whitespace-nowrap ${
                   explanationStyle === "simple" ? "bg-primary text-white" : "text-gray-500 hover:text-gray-800"
                 }`}
               >
-                Simply explained 💡
+                Simple 💡
               </button>
             </div>
 
             {/* Language selector */}
-            <div className="relative shrink-0 w-32">
-              <div className="flex items-center gap-1 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 select-none">
-                <Globe className="w-3 h-3" />
+            <div className="relative shrink-0 w-28 sm:w-32">
+              <div className="flex items-center gap-1 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 select-none">
+                <Globe className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
               </div>
               <select
                 id="select-translation"
                 value={explanationLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
-                className="w-full text-[10px] pl-6.5 pr-2 py-2 border border-gray-200 bg-white rounded-lg outline-none cursor-pointer font-semibold text-gray-700 hover:bg-gray-50/50 appearance-none text-center select-none"
+                className="w-full text-[9px] sm:text-[10px] pl-5 sm:pl-6.5 pr-1.5 sm:pr-2 py-1.5 sm:py-2 border border-gray-200 bg-white rounded-lg outline-none cursor-pointer font-semibold text-gray-700 hover:bg-gray-50/50 appearance-none text-center select-none"
               >
                 {["English", "Spanish", "French", "Arabic", "Igbo"].map((lang) => (
                   <option key={lang} value={lang}>
@@ -446,8 +447,8 @@ export default function PracticeView({
                   </option>
                 ))}
               </select>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <ChevronDown className="w-3 h-3" />
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                <ChevronDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
               </div>
             </div>
           </div>
@@ -487,12 +488,12 @@ export default function PracticeView({
                 type="button"
                 disabled={isChecked}
                 onClick={() => handleSelectOption(prefix)}
-                className={`text-left transition-all duration-150 rounded-xl p-3.5 flex items-start gap-3 w-full option ${buttonClass} ${!isChecked ? "cursor-pointer active:scale-99" : ""}`}
+                className={`text-left transition-all duration-150 rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 flex items-start gap-2 sm:gap-3 w-full option ${buttonClass} ${!isChecked ? "cursor-pointer active:scale-99" : ""}`}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 select-none transition-colors ${prefixClass}`}>
+                <div className={`w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-xs shrink-0 select-none transition-colors ${prefixClass}`}>
                   {prefix}
                 </div>
-                <span className="font-sans text-xs pt-1 leading-relaxed">{option}</span>
+                <span className="font-sans text-[11px] sm:text-xs pt-0.5 sm:pt-1 leading-snug sm:leading-relaxed break-words">{option}</span>
               </button>
             );
           })}
@@ -536,10 +537,10 @@ export default function PracticeView({
       <div className="w-full flex justify-between items-center pt-2 select-none font-sans">
         <button
           onClick={() => onChangeView("home")}
-          className="font-bold text-xs text-gray-500 hover:text-gray-900 border border-gray-200 hover:bg-gray-50 px-4 py-2.5 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+          className="font-bold text-xs sm:text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:bg-gray-50 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
         >
-          <Home className="w-3.5 h-3.5 text-gray-400" />
-          <span>Dashboard</span>
+          <Home className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-gray-400" />
+          <span className="hidden xs:inline">Dashboard</span>
         </button>
 
         {!isChecked ? (
@@ -547,19 +548,21 @@ export default function PracticeView({
             onClick={handleCheckAnswer}
             disabled={!selectedOption}
             id="check-answer"
-            className="font-bold text-xs bg-primary text-white hover:bg-primary-hover disabled:opacity-40 disabled:hover:bg-primary px-6 py-2.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="font-bold text-xs sm:text-sm bg-primary text-white hover:bg-primary-hover disabled:opacity-40 disabled:hover:bg-primary px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
           >
-            Check Answer
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span className="hidden xs:inline">Check Answer</span>
+            <span className="xs:hidden">Check</span>
+            <ArrowRight className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
           </button>
         ) : (
           <button
             onClick={handleNextQuestion}
             id="next-question"
-            className="font-bold text-xs bg-emerald-600 text-white hover:bg-emerald-700 px-6 py-2.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="font-bold text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
           >
-            {currentIndex + 1 >= activeQuestions.length ? "View Results" : "Next Question"}
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span className="hidden xs:inline">{currentIndex + 1 >= activeQuestions.length ? "View Results" : "Next Question"}</span>
+            <span className="xs:hidden">{currentIndex + 1 >= activeQuestions.length ? "Results" : "Next"}</span>
+            <ArrowRight className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
           </button>
         )}
       </div>

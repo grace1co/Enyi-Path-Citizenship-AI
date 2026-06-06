@@ -1255,8 +1255,8 @@ export default function TutorView({
             />
 
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-gray-900">USCIS Oral Simulation Room</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">USCIS Oral Simulation Room</h3>
+              <p className="text-[10px] sm:text-xs text-gray-600 leading-relaxed">
                 The real test has 10 oral questions. You need 6 correct to pass.
               </p>
             </div>

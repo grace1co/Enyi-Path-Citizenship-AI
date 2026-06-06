@@ -333,8 +333,8 @@ export default function ReadingWritingView({
             {isTestMode ? <Award className="w-5 h-5 text-primary" /> : (activeTab === "reading" ? <BookOpen className="w-5 h-5 text-primary" /> : <PenTool className="w-5 h-5 text-primary" />)}
           </div>
           <div>
-            <h2 className="text-md font-bold text-gray-900 leading-snug">Oral Communication Module</h2>
-            <p className="text-xs text-gray-400">Practice reading out loud and writing what you hear.</p>
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 leading-snug">Oral Communication Module</h2>
+            <p className="text-[10px] sm:text-xs text-gray-400">Practice reading out loud and writing what you hear.</p>
           </div>
         </div>
 
@@ -394,8 +394,8 @@ export default function ReadingWritingView({
                 <Award className="w-8 h-8" />
               </div>
               <div className="space-y-2 max-w-md mx-auto">
-                <h3 className="text-lg font-black text-gray-900">USCIS English Exam Simulation</h3>
-                <p className="text-gray-500 text-xs leading-normal">
+                <h3 className="text-base sm:text-lg md:text-xl font-black text-gray-900">USCIS English Exam Simulation</h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs leading-normal">
                   Simulate the real USCIS English test.
                 </p>
               </div>
@@ -448,7 +448,7 @@ export default function ReadingWritingView({
               {/* Target Sentence */}
               {testReadingSentences[testReadingIndex] && (
                 <div className="bg-[#fbfcff] p-6 rounded-xl border border-blue-50 flex justify-between items-center gap-6">
-                  <p className="text-lg md:text-xl font-bold text-gray-900 leading-normal select-none">
+                  <p className="text-base sm:text-lg md:text-xl font-bold text-gray-900 leading-normal select-none">
                     {testReadingSentences[testReadingIndex].sentence}
                   </p>
                   <button
@@ -718,8 +718,8 @@ export default function ReadingWritingView({
                   <CheckCircle className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-black text-gray-900 font-headline uppercase tracking-tight">Citizenship Mock Exam Complete</h3>
-                  <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">USCIS Communication Simulation Report</p>
+                  <h3 className="text-base sm:text-lg md:text-xl font-black text-gray-900 font-headline uppercase tracking-tight">Citizenship Mock Exam Complete</h3>
+                  <p className="text-gray-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">USCIS Communication Simulation Report</p>
                 </div>
               </div>
 

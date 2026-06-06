@@ -964,10 +964,10 @@ export default function App() {
         </div>
       </nav>
 
-      <header id="mobile-top-bar" className="md:hidden flex justify-between items-center w-full px-5 h-14 z-40 bg-white border-b border-[#e5e7eb] fixed top-0 left-0 select-none">
-        <div className="flex items-center gap-2.5">
+      <header id="mobile-top-bar" className="md:hidden flex justify-between items-center w-full px-4 sm:px-5 h-14 z-40 bg-white border-b border-[#e5e7eb] fixed top-0 left-0 right-0 select-none">
+        <div className="flex items-center gap-2 min-w-0">
           <EnyiLogo size={26} />
-          <h1 className="font-bold text-md text-[#1e3a8a] tracking-tight">
+          <h1 className="font-bold text-sm sm:text-base text-[#1e3a8a] tracking-tight truncate">
             Enyi Path
           </h1>
         </div>
@@ -990,8 +990,9 @@ export default function App() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col md:ml-64 min-h-screen">
-        <main className="flex-grow pt-20 md:pt-8 pb-24 md:pb-8 px-4 sm:px-6 md:px-10 max-w-5xl mx-auto w-full">
+      <div className="flex-1 flex flex-col md:ml-72 min-h-screen w-full">
+        <main className="flex-grow pt-16 sm:pt-16 md:pt-6 pb-28 sm:pb-28 md:pb-6 px-3 sm:px-4 md:px-6 lg:px-8 max-w-full w-full">
+          <div className="w-full max-w-6xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeView}
@@ -1072,11 +1073,11 @@ export default function App() {
               )}
             </motion.div>
           </AnimatePresence>
+          </div>
         </main>
       </div>
 
-      // Mobile bottom navigation
-      <nav id="mobile-bottom-nav" className="md:hidden fixed bottom-1.5 left-1.5 right-1.5 h-16 bg-[#eef3f7]/95 backdrop-blur-md border border-gray-100 rounded-2xl flex items-center justify-around px-2 py-1 select-none z-40 shadow-lg">
+      <nav id="mobile-bottom-nav" className="md:hidden fixed bottom-0 left-0 right-0 h-20 sm:h-20 bg-white/95 backdrop-blur-md border-t border-gray-100 flex items-center justify-around px-2 py-2 select-none z-40 shadow-lg pb-[env(safe-area-inset-bottom)]">
         {[
           { id: "home", label: "Home", icon: Home },
           { id: "practice", label: "Practice", icon: BookOpen },

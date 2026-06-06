@@ -285,8 +285,8 @@ export default function ProgressView({
       {activeTab === "performance" && (
         <div className="space-y-6 animate-fade-in">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Your Study Progress Overview</h2>
-            <p className="text-xs text-gray-400 mt-0.5 leading-relaxed font-sans">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Your Study Progress Overview</h2>
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 leading-relaxed font-sans">
               See how ready you are, how many points you’ve earned, and past practice results.
             </p>
           </div>
@@ -311,7 +311,7 @@ export default function ProgressView({
                   />
                 </svg>
                 <div className="absolute text-center">
-                  <span className="text-2xl font-black text-gray-900">{overallReadiness}%</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900">{overallReadiness}%</span>
                 </div>
               </div>
               <div className="space-y-1">
@@ -409,58 +409,58 @@ export default function ProgressView({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#e5e7eb] p-4 rounded-xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0 border border-amber-100">
-                <Medal className="w-5 h-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white border border-[#e5e7eb] p-3 sm:p-4 rounded-lg sm:rounded-xl flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0 border border-amber-100">
+                <Medal className="w-4 sm:w-5 h-4 sm:h-5" />
               </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">Active Streak</span>
-                <span className="text-base font-bold text-gray-900 leading-tight">{stats.activeStreak} Days</span>
-              </div>
-            </div>
-
-            <div className="bg-white border border-[#e5e7eb] p-4 rounded-xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-primary shrink-0 border border-primary/10">
-                <Award className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">Mastered Items</span>
-                <span className="text-base font-bold text-primary leading-tight">{stats.masteredQuestionsCount} / 100</span>
+              <div className="min-w-0">
+                <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">Active Streak</span>
+                <span className="text-sm sm:text-base font-bold text-gray-900 leading-tight">{stats.activeStreak} Days</span>
               </div>
             </div>
 
-            <div className="bg-white border border-[#e5e7eb] p-4 rounded-xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
-                <Clock className="w-5 h-5" />
+            <div className="bg-white border border-[#e5e7eb] p-3 sm:p-4 rounded-lg sm:rounded-xl flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg bg-primary-container flex items-center justify-center text-primary shrink-0 border border-primary/10">
+                <Award className="w-4 sm:w-5 h-4 sm:h-5" />
               </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">Study Time</span>
-                <span className="text-base font-bold text-gray-900 leading-tight">{stats.totalTimeStudied} Mins</span>
+              <div className="min-w-0">
+                <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">Mastered Items</span>
+                <span className="text-sm sm:text-base font-bold text-primary leading-tight">{stats.masteredQuestionsCount} / 100</span>
               </div>
             </div>
 
-            <div className="bg-white border border-[#e5e7eb] p-4 rounded-xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 shrink-0 border border-purple-100">
-                <Calendar className="w-5 h-5" />
+            <div className="bg-white border border-[#e5e7eb] p-3 sm:p-4 rounded-lg sm:rounded-xl flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
+                <Clock className="w-4 sm:w-5 h-4 sm:h-5" />
               </div>
-              <div>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">USCIS Appointment</span>
-                <span className="text-xs font-bold text-gray-900 leading-tight block truncate">{stats.examDate}</span>
+              <div className="min-w-0">
+                <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">Study Time</span>
+                <span className="text-sm sm:text-base font-bold text-gray-900 leading-tight">{stats.totalTimeStudied} Mins</span>
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e5e7eb] p-3 sm:p-4 rounded-lg sm:rounded-xl flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 shrink-0 border border-purple-100">
+                <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider block font-sans">USCIS Appointment</span>
+                <span className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight block truncate">{stats.examDate}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white border border-[#e5e7eb] p-5 rounded-xl space-y-4">
+          <div className="bg-white border border-[#e5e7eb] p-4 sm:p-5 rounded-lg sm:rounded-xl space-y-3 sm:space-y-4">
             <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5 uppercase tracking-wide select-none">
-              <Trophy className="w-4 h-4 text-primary" />
+              <Trophy className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-primary" />
               Earned Badges & Civic Milestones
             </h3>
-            <p className="text-[11px] text-gray-400 font-sans max-w-xl">
+            <p className="text-[10px] sm:text-[11px] text-gray-400 font-sans max-w-xl leading-relaxed">
               Complete practice exams, answer daily flashcards, and use Enyi AI lessons to unlock badges. Push yourself to become a U.S. Civics Expert!
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 pt-1">
               {badges.map((b) => (
                 <div
                   key={b.id}

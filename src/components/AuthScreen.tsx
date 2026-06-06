@@ -102,12 +102,12 @@ export default function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         <div className="flex flex-col items-center text-center space-y-2 mb-8">
           <div className="flex items-center gap-2 mb-2">
             <EnyiLogo size={32} />
-            <span className="font-bold text-xl text-[#1e3a8a] tracking-tight">Enyi Path</span>
+            <span className="font-bold text-lg sm:text-xl text-[#1e3a8a] tracking-tight">Enyi Path</span>
           </div>
-          <h2 className="text-xl font-bold font-headline text-gray-900 tracking-tight">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold font-headline text-gray-900 tracking-tight">
             {isLogin ? "Sign in to your account" : "Create your study account"}
           </h2>
-          <p className="text-xs text-gray-500 font-sans max-w-xs leading-normal">
+          <p className="text-[10px] sm:text-xs text-gray-500 font-sans max-w-xs leading-normal">
             {isLogin 
               ? "Sign in to save your study progress and track your daily streak." 
               : "Sign up to start saving your progress, track your streak, and prepare for the test."}
