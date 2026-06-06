@@ -124,6 +124,22 @@ export interface AppSettings {
   autoSaveProgress: boolean;
 }
 
+export interface QuestionProgress {
+  [questionId: string]: {
+    timesAnswered: number;
+    timesWrong: number;
+    lastAnswerCorrect: boolean | null;
+    normalizedModule: string;
+  };
+}
+
+export interface AnswerLogEntry {
+  questionId: number;
+  isCorrect: boolean;
+  category: string;
+  normalizedModule: string;
+}
+
 export function getDefaultSettings(user: any): AppSettings {
   return {
     profileName: user?.profile_name || "Student",

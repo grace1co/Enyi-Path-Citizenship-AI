@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { UserStats, StudySession, StudyPlanItem, Badge } from "../types";
+import { UserStats, StudySession, StudyPlanItem, Badge, QuestionProgress } from "../types";
+import { normalizeModuleName } from "../utils/moduleMap";
 import {
   Medal,
   Calendar,
@@ -27,6 +28,8 @@ interface ProgressViewProps {
   onChangeView: (view: "home" | "practice" | "flashcards" | "tutor" | "progress") => void;
   settings?: any;
   setSettings?: any;
+  questionProgress?: QuestionProgress;
+  onStartReviewWrong?: () => void;
 }
 
 export default function ProgressView({
@@ -36,6 +39,8 @@ export default function ProgressView({
   onChangeView,
   settings,
   setSettings,
+  questionProgress = {},
+  onStartReviewWrong,
 }: ProgressViewProps) {
   const [activeTab, setActiveTab] = useState<"performance" | "roadmap">("performance");
 
@@ -132,36 +137,24 @@ export default function ProgressView({
       "System of Government": { correct: 0, total: 0, color: "bg-[#2563eb]" },
       "American History": { correct: 0, total: 0, color: "bg-emerald-500" },
       "Rights & Responsibilities": { correct: 0, total: 0, color: "bg-amber-500" },
+      "Geography & Symbols": { correct: 0, total: 0, color: "bg-purple-500" },
     };
 
-    sessions.forEach(s => {
-      if (s.type === "Practice") {
-        if (s.module.includes("Democracy") || s.module.includes("Civics")) {
-          categoryStats["Principles of Democracy"].correct += s.score;
-          categoryStats["Principles of Democracy"].total += s.totalQuestions;
-        } else if (s.module.includes("History")) {
-          categoryStats["American History"].correct += s.score;
-          categoryStats["American History"].total += s.totalQuestions;
-        } else if (s.module.includes("Government")) {
-          categoryStats["System of Government"].correct += s.score;
-          categoryStats["System of Government"].total += s.totalQuestions;
-        } else {
-          categoryStats["Rights & Responsibilities"].correct += s.score;
-          categoryStats["Rights & Responsibilities"].total += s.totalQuestions;
-        }
+    Object.values(questionProgress).forEach((prog) => {
+      const mod = normalizeModuleName(prog.normalizedModule);
+      if (categoryStats[mod]) {
+        const correct = prog.timesAnswered - prog.timesWrong;
+        categoryStats[mod].correct += correct;
+        categoryStats[mod].total += prog.timesAnswered;
       }
     });
 
-    return Object.entries(categoryStats).map(([name, val]) => {
-      const accuracyValue = val.total > 0
-        ? Math.min(100, Math.round((val.correct / val.total) * 100))
-        : 0;
-      return {
-        name,
-        accuracy: accuracyValue,
-        color: val.color
-      };
-    });
+    return Object.entries(categoryStats).map(([name, val]) => ({
+      name,
+      accuracy: val.total > 0 ? Math.min(100, Math.round((val.correct / val.total) * 100)) : 0,
+      color: val.color,
+      hasData: val.total > 0,
+    }));
   };
 
   const categoriesAccuracy = getCategoryMetrics();
@@ -490,12 +483,23 @@ export default function ProgressView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
             <div className="bg-white border border-[#e5e7eb] p-5 rounded-xl space-y-4">
-              <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5 uppercase tracking-wide select-none">
-                <BarChart2 className="w-3.5 h-3.5 text-gray-400" />
-                Accuracy Level by Civics Module
-              </h3>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5 uppercase tracking-wide select-none">
+                  <BarChart2 className="w-3.5 h-3.5 text-gray-400" />
+                  Accuracy Level by Civics Module
+                </h3>
+                {onStartReviewWrong && (
+                  <button
+                    onClick={onStartReviewWrong}
+                    className="text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1.5 transition-colors shrink-0"
+                  >
+                    <AlertTriangle className="w-3 h-3" />
+                    Review Wrong Answers
+                  </button>
+                )}
+              </div>
               <div className="space-y-4 pt-1">
-                {categoriesAccuracy.every((cat) => cat.accuracy === 0) ? (
+                {categoriesAccuracy.every((cat) => !cat.hasData) ? (
                   <div className="text-center py-6 text-gray-400 text-xs">
                     Complete a practice quiz to see your accuracy by topic.
                   </div>
@@ -504,7 +508,9 @@ export default function ProgressView({
                     <div key={idx} className="space-y-1.5 font-sans">
                       <div className="flex justify-between items-center text-[10px]">
                         <span className="text-gray-600 font-medium">{cat.name}</span>
-                        <span className="font-semibold text-gray-900">{cat.accuracy}% Accuracy</span>
+                        <span className="font-semibold text-gray-900">
+                          {cat.hasData ? `${cat.accuracy}% Accuracy` : "No data yet"}
+                        </span>
                       </div>
                       <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Question } from "../types";
+import { Question, QuestionProgress, AnswerLogEntry } from "../types";
+import { normalizeModuleName } from "../utils/moduleMap";
 import {
   Sparkles,
   ArrowRight,
@@ -14,16 +15,63 @@ import {
   ChevronDown,
   Globe,
   Home,
-  Volume2
+  Volume2,
+  RotateCcw
 } from "lucide-react";
 import { speakText, stopSpeaking } from "../utils/speech";
 
 interface PracticeViewProps {
   questions: Question[];
-  onCompleteQuiz: (score: number) => void;
+  onCompleteQuiz: (score: number, answerLog: AnswerLogEntry[]) => void;
   onChangeView: (view: "home" | "practice" | "flashcards" | "tutor" | "progress") => void;
   settings?: any;
   setSettings?: any;
+  questionProgress?: QuestionProgress;
+  mode?: "practice" | "review-wrong";
+}
+
+function shuffleArray<T>(array: T[]): T[] {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function getQuestionWeight(question: Question, progress: QuestionProgress): number {
+  const stats = progress[String(question.id)];
+  if (!stats) return 3;
+  let weight = 1;
+  if (stats.timesWrong > 0) weight += stats.timesWrong * 3;
+  if (stats.lastAnswerCorrect === false) weight += 5;
+  if (stats.lastAnswerCorrect === true) weight = Math.max(1, weight - 0.5);
+  return Math.max(weight, 1);
+}
+
+function selectWeightedQuestions(
+  questions: Question[],
+  progress: QuestionProgress,
+  count: number
+): Question[] {
+  if (questions.length <= count) return shuffleArray(questions);
+
+  const pool = [...questions];
+  const selected: Question[] = [];
+
+  while (selected.length < count && pool.length > 0) {
+    const weights = pool.map((q) => getQuestionWeight(q, progress));
+    const total = weights.reduce((s, w) => s + w, 0);
+    let rand = Math.random() * total;
+    let idx = 0;
+    for (let i = 0; i < weights.length; i++) {
+      rand -= weights[i];
+      if (rand <= 0) { idx = i; break; }
+    }
+    selected.push(pool.splice(idx, 1)[0]);
+  }
+
+  return selected;
 }
 
 export default function PracticeView({
@@ -32,20 +80,36 @@ export default function PracticeView({
   onChangeView,
   settings,
   setSettings,
+  questionProgress = {},
+  mode = "practice",
 }: PracticeViewProps) {
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
+  const [reviewWrongEmpty, setReviewWrongEmpty] = useState(false);
 
   React.useEffect(() => {
-    if (questions && questions.length > 0) {
-      const shuffled = [...questions].sort(() => 0.5 - Math.random());
-      setActiveQuestions(shuffled.slice(0, 10));
+    if (!questions || questions.length === 0) return;
+
+    if (mode === "review-wrong") {
+      const wrongQuestions = questions.filter(
+        (q) => (questionProgress[String(q.id)]?.timesWrong ?? 0) > 0
+      );
+      if (wrongQuestions.length === 0) {
+        setReviewWrongEmpty(true);
+        return;
+      }
+      setActiveQuestions(
+        selectWeightedQuestions(wrongQuestions, questionProgress, Math.min(10, wrongQuestions.length))
+      );
+    } else {
+      setActiveQuestions(selectWeightedQuestions(questions, questionProgress, 10));
     }
-  }, [questions]);
+  }, [questions, mode]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isChecked, setIsChecked] = useState(false);
   const [score, setScore] = useState(0);
+  const [answerLog, setAnswerLog] = useState<AnswerLogEntry[]>([]);
   const [categoryPerformance, setCategoryPerformance] = useState<Record<string, { correct: number; total: number }>>({});
 
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -56,18 +120,38 @@ export default function PracticeView({
   }, [currentIndex]);
 
   React.useEffect(() => {
-    return () => {
-      stopSpeaking();
-    };
+    return () => { stopSpeaking(); };
   }, []);
 
   const explanationStyle = settings?.explanationStyle || "normal";
   const explanationLanguage = settings?.explanationLanguage || "English";
-  
+
   const [aiTip, setAiTip] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
-
   const [showFeedbackSummary, setShowFeedbackSummary] = useState(false);
+
+  if (reviewWrongEmpty) {
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center p-8 bg-white border border-[#e5e7eb] rounded-xl shadow-sm text-center space-y-4">
+        <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+          <CheckCircle className="w-7 h-7 text-emerald-500" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-gray-900">No Missed Questions Yet</h3>
+          <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
+            You don't have any missed questions yet. Complete a quiz first, then return here to practice what you got wrong.
+          </p>
+        </div>
+        <button
+          onClick={() => onChangeView("practice")}
+          className="bg-primary hover:bg-primary-hover text-white font-bold text-xs px-5 py-2.5 rounded-lg cursor-pointer flex items-center gap-2"
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          Start a Regular Quiz
+        </button>
+      </div>
+    );
+  }
 
   if (activeQuestions.length === 0) {
     return (
@@ -95,6 +179,18 @@ export default function PracticeView({
     }
 
     const cat = currentQuestion.category || "General Civics";
+    const normalizedMod = normalizeModuleName(cat);
+
+    setAnswerLog((prev) => [
+      ...prev,
+      {
+        questionId: currentQuestion.id,
+        isCorrect: correct,
+        category: cat,
+        normalizedModule: normalizedMod,
+      },
+    ]);
+
     setCategoryPerformance((prev) => {
       const currentVal = prev[cat] || { correct: 0, total: 0 };
       return {
@@ -150,10 +246,7 @@ export default function PracticeView({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Tutor API failed");
-      }
-
+      if (!response.ok) throw new Error("Tutor API failed");
       const data = await response.json();
       setAiTip(data.content);
     } catch (err: any) {
@@ -165,35 +258,25 @@ export default function PracticeView({
   };
 
   const handleStyleChange = (style: "normal" | "simple") => {
-    if (setSettings) {
-      setSettings((prev: any) => ({ ...prev, explanationStyle: style }));
-    }
-    if (aiTip) {
-      handleAskEnyiAI(style, explanationLanguage);
-    }
+    if (setSettings) setSettings((prev: any) => ({ ...prev, explanationStyle: style }));
+    if (aiTip) handleAskEnyiAI(style, explanationLanguage);
   };
 
   const handleLanguageChange = (lang: string) => {
-    if (setSettings) {
-      setSettings((prev: any) => ({ ...prev, explanationLanguage: lang }));
-    }
-    if (aiTip) {
-      handleAskEnyiAI(explanationStyle, lang);
-    }
+    if (setSettings) setSettings((prev: any) => ({ ...prev, explanationLanguage: lang }));
+    if (aiTip) handleAskEnyiAI(explanationStyle, lang);
   };
 
   const handleCompleteAndLog = () => {
-    onCompleteQuiz(score);
+    onCompleteQuiz(score, answerLog);
   };
 
   const currentProgPercentage = ((currentIndex + 1) / activeQuestions.length) * 100;
 
-  // Results screen.
   if (showFeedbackSummary) {
     const accuracy = Math.round((score / activeQuestions.length) * 100);
-    const passed = score >= 6; // USCIS standard is 6+ out of 10
+    const passed = score >= 6;
 
-    // Build a real summary based on actual performance per category
     const strengths: string[] = [];
     const weaknesses: string[] = [];
 
@@ -207,41 +290,30 @@ export default function PracticeView({
       }
     });
 
-    // Fallback if categorical performance scores fall in the middle
     if (strengths.length === 0 && weaknesses.length === 0) {
       Object.entries(categoryPerformance).forEach(([category, stats]) => {
         const { correct, total } = stats as { correct: number; total: number };
-        if (correct === total) {
-          strengths.push(category);
-        } else {
-          weaknesses.push(category);
-        }
+        if (correct === total) strengths.push(category);
+        else weaknesses.push(category);
       });
     }
 
     if (strengths.length === 0 && weaknesses.length === 0) {
-      if (passed) {
-        strengths.push("General Civics & Government");
-      } else {
-        weaknesses.push("General Civics concepts");
-      }
+      if (passed) strengths.push("General Civics & Government");
+      else weaknesses.push("General Civics concepts");
     }
 
     return (
       <div className="max-w-2xl mx-auto min-w-0 space-y-6 animate-fade-in py-4 font-sans select-none">
         <div className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden p-6 md:p-8 space-y-6 text-center shadow-md">
-          {/* Medal / Trophy Icon */}
           <div className="flex justify-center">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center border-4 ${
-              passed
-                ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                : "bg-amber-50 text-amber-600 border-amber-100"
+              passed ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
             }`}>
               <Award className="w-8 h-8" />
             </div>
           </div>
 
-          {/* Test Status Banner */}
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-gray-900 md:text-2xl">
               {passed ? "Practice Complete" : "Review Recommended"}
@@ -253,7 +325,6 @@ export default function PracticeView({
             </p>
           </div>
 
-          {/* Practice score summary */}
           <div className="grid grid-cols-3 gap-4 border-y border-gray-100 py-5 my-2">
             <div>
               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Total Questions</span>
@@ -276,13 +347,9 @@ export default function PracticeView({
             <span>You earned {score * 20 + (passed ? 50 : 0)} points! Keep it up.</span>
           </div>
 
-          {/* Strengths and Weaknesses Section */}
           <div className="text-left space-y-4 pt-1 border-t border-gray-50">
-            <h3 className="text-xs font-extrabold text-gray-950 uppercase tracking-widest block">
-              Results Summary
-            </h3>
+            <h3 className="text-xs font-extrabold text-gray-950 uppercase tracking-widest block">Results Summary</h3>
 
-            {/* Strengths List */}
             {strengths.length > 0 && (
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block select-none">
@@ -299,7 +366,6 @@ export default function PracticeView({
               </div>
             )}
 
-            {/* Weaknesses List */}
             {weaknesses.length > 0 && (
               <div className="space-y-2 pt-2">
                 <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block select-none font-sans">
@@ -317,7 +383,6 @@ export default function PracticeView({
             )}
           </div>
 
-          {/* Learning Suggestions */}
           <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl text-left flex items-start gap-3">
             <Compass className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div className="space-y-0.5">
@@ -332,7 +397,7 @@ export default function PracticeView({
             onClick={handleCompleteAndLog}
             className="w-full bg-primary hover:bg-primary-hover text-white font-extrabold py-3 rounded-xl text-xs transition-colors shadow-sm select-none cursor-pointer text-center uppercase tracking-wider"
           >
-            Save Performance & Logs View
+            Save Performance & View Logs
           </button>
         </div>
       </div>
@@ -345,7 +410,7 @@ export default function PracticeView({
         <div className="flex justify-between items-end mb-2 font-sans text-xs text-[#6b7280]">
           <span className="flex items-center gap-1.5 font-medium text-primary uppercase tracking-wide">
             <BookOpen className="w-3.5 h-3.5 text-primary" />
-            Civics Practice • {currentQuestion.category}
+            {mode === "review-wrong" ? "Review Wrong Answers" : "Civics Practice"} • {currentQuestion.category}
           </span>
           <span className="font-semibold text-primary font-mono select-none">
             QUESTION {currentIndex + 1} OF {activeQuestions.length}
@@ -393,10 +458,8 @@ export default function PracticeView({
           </button>
         </div>
 
-        {/* Buttons to ask AI or change settings */}
         <div className="bg-gray-50/50 p-3 sm:p-4 rounded-xl border border-gray-100 mb-6 space-y-3 font-sans">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 sm:gap-3 flex-wrap">
-            {/* Ask Enyi AI Button */}
             <button
               onClick={() => handleAskEnyiAI()}
               disabled={loadingAi}
@@ -407,7 +470,6 @@ export default function PracticeView({
               <span className="xs:hidden">{loadingAi ? "..." : "Enyi"}</span>
             </button>
 
-            {/* Explanation style buttons */}
             <div className="flex items-center gap-1 bg-white border border-gray-200/80 rounded-lg p-0.5 shrink-0 text-[9px] sm:text-[10px]">
               <button
                 type="button"
@@ -430,7 +492,6 @@ export default function PracticeView({
               </button>
             </div>
 
-            {/* Language selector */}
             <div className="relative shrink-0 w-28 sm:w-32">
               <div className="flex items-center gap-1 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 select-none">
                 <Globe className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
@@ -442,9 +503,7 @@ export default function PracticeView({
                 className="w-full text-[9px] sm:text-[10px] pl-5 sm:pl-6.5 pr-1.5 sm:pr-2 py-1.5 sm:py-2 border border-gray-200 bg-white rounded-lg outline-none cursor-pointer font-semibold text-gray-700 hover:bg-gray-50/50 appearance-none text-center select-none"
               >
                 {["English", "Spanish", "French", "Arabic", "Igbo"].map((lang) => (
-                  <option key={lang} value={lang}>
-                    {lang}
-                  </option>
+                  <option key={lang} value={lang}>{lang}</option>
                 ))}
               </select>
               <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -468,7 +527,6 @@ export default function PracticeView({
               prefixClass = "bg-primary text-white border-primary";
             }
 
-            {/* Show green for correct, red for wrong */}
             if (isChecked) {
               if (isCorrectOption) {
                 buttonClass = "border-emerald-500 bg-emerald-50/10 text-emerald-950 font-bold";

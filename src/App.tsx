@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Question, Flashcard, StudySession, ChatMessage, UserStats, AppSettings, getDefaultSettings, safeLoadSettings } from "./types";
+import { Question, Flashcard, StudySession, ChatMessage, UserStats, AppSettings, QuestionProgress, AnswerLogEntry, getDefaultSettings, safeLoadSettings } from "./types";
+import { normalizeModuleName } from "./utils/moduleMap";
 import { uscisQuestions, uscisFlashcards } from "./data";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -65,6 +66,8 @@ export default function App() {
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [questionProgress, setQuestionProgress] = useState<QuestionProgress>({});
+  const [practiceMode, setPracticeMode] = useState<"practice" | "review-wrong">("practice");
 
   useEffect(() => {
     localStorage.setItem("enyi_civics_version", civicsVersion);
@@ -257,12 +260,14 @@ export default function App() {
       };
       const cachedSessions = JSON.parse(localStorage.getItem("enyi_guest_sessions") || "[]");
       const cachedFlashcardMastered = JSON.parse(localStorage.getItem("enyi_guest_flashcards") || localStorage.getItem("enyi_guest_flashcard_mastered") || "{}");
+      const cachedQuestionProgress = JSON.parse(localStorage.getItem("enyi_question_progress_guest") || "{}");
 
       setUser(cachedUser);
       const guestSettings = safeLoadSettings("enyi_guest_settings", cachedUser);
       setSettings(guestSettings);
       setStats(cachedStats);
       setSessions(cachedSessions);
+      setQuestionProgress(cachedQuestionProgress);
       setFlashcards(prev => prev.map(card => ({
         ...card,
         isMastered: !!cachedFlashcardMastered[card.id]
@@ -322,6 +327,9 @@ export default function App() {
             localStorage.setItem(userSessionsKey, JSON.stringify(sesData));
           }
         }
+
+        const savedQuestionProgress = JSON.parse(localStorage.getItem(`enyi_question_progress_${data.user.id}`) || "{}");
+        setQuestionProgress(savedQuestionProgress);
 
         const userFlashcardsKey = `enyi_user_flashcards_${data.user.id}`;
         const cachedUserFlashcards = JSON.parse(localStorage.getItem(userFlashcardsKey) || "null");
@@ -736,13 +744,38 @@ export default function App() {
   };
 
   // Save quiz results
-  const handleCompleteQuiz = (score: number) => {
+  const handleCompleteQuiz = (score: number, answerLog: AnswerLogEntry[] = []) => {
+    // Update cumulative per-question progress
+    const updatedProgress = { ...questionProgress };
+    answerLog.forEach(({ questionId, isCorrect, normalizedModule }) => {
+      const key = String(questionId);
+      const prev = updatedProgress[key] || { timesAnswered: 0, timesWrong: 0, lastAnswerCorrect: null, normalizedModule };
+      updatedProgress[key] = {
+        timesAnswered: prev.timesAnswered + 1,
+        timesWrong: prev.timesWrong + (isCorrect ? 0 : 1),
+        lastAnswerCorrect: isCorrect,
+        normalizedModule,
+      };
+    });
+    setQuestionProgress(updatedProgress);
+    const progressKey = token === "guest-token"
+      ? "enyi_question_progress_guest"
+      : `enyi_question_progress_${user?.id}`;
+    localStorage.setItem(progressKey, JSON.stringify(updatedProgress));
+
+    // Determine the dominant module for the session label
+    const moduleCounts: Record<string, number> = {};
+    answerLog.forEach(({ normalizedModule }) => {
+      moduleCounts[normalizedModule] = (moduleCounts[normalizedModule] || 0) + 1;
+    });
+    const dominantModule = Object.entries(moduleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "Civics Practice";
+
     const newSession: StudySession = {
       id: "ses_" + Date.now(),
       date: "Just Now",
-      module: "Civics & Ethics Practice",
+      module: dominantModule,
       score,
-      totalQuestions: 10,
+      totalQuestions: answerLog.length || 10,
       type: "Practice",
     };
     const updatedSessions = [newSession, ...sessions];
@@ -763,6 +796,16 @@ export default function App() {
     saveStatsToStateAndStorage(newStats);
 
     setActiveView("progress");
+  };
+
+  const handleStartReviewWrong = () => {
+    setPracticeMode("review-wrong");
+    setActiveView("practice");
+  };
+
+  const handleStartPractice = () => {
+    setPracticeMode("practice");
+    setActiveView("practice");
   };
 
   const handleAwardPoints = (points: number) => {
@@ -795,12 +838,14 @@ export default function App() {
       setStats(resetStats);
       setSessions([]);
       setFlashcards(uscisFlashcards);
+      setQuestionProgress({});
 
       if (token) {
         if (token === "guest-token") {
           localStorage.setItem("enyi_guest_stats", JSON.stringify(resetStats));
           localStorage.setItem("enyi_guest_sessions", "[]");
           localStorage.setItem("enyi_guest_flashcard_mastered", "{}");
+          localStorage.removeItem("enyi_question_progress_guest");
         } else {
           try {
             await fetch("/api/user/stats", {
@@ -821,6 +866,10 @@ export default function App() {
               method: "POST",
               headers: { "Authorization": `Bearer ${token}` }
             });
+
+            if (user?.id) {
+              localStorage.removeItem(`enyi_question_progress_${user.id}`);
+            }
           } catch (err) {
             console.warn("Failed to reset history stats:", err);
           }
@@ -878,6 +927,7 @@ export default function App() {
           <div className="px-4">
             <button
               onClick={() => {
+                setPracticeMode("practice");
                 setActiveView("practice");
                 handleToggleMastery(0); // slight wake-state updates
               }}
@@ -1017,9 +1067,14 @@ export default function App() {
                 <PracticeView
                   questions={questions}
                   onCompleteQuiz={handleCompleteQuiz}
-                  onChangeView={setActiveView}
+                  onChangeView={(view) => {
+                    setPracticeMode("practice");
+                    setActiveView(view);
+                  }}
                   settings={settings}
                   setSettings={setSettings}
+                  questionProgress={questionProgress}
+                  mode={practiceMode}
                 />
               )}
 
@@ -1061,6 +1116,8 @@ export default function App() {
                   onChangeView={setActiveView}
                   settings={settings}
                   setSettings={setSettings}
+                  questionProgress={questionProgress}
+                  onStartReviewWrong={handleStartReviewWrong}
                 />
               )}
 
