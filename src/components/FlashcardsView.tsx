@@ -199,7 +199,7 @@ export default function FlashcardsView({
 
           <div
             onClick={() => setIsFlipped(!isFlipped)}
-            className=\"w-full relative h-52 sm:h-64 md:h-72 cursor-pointer group perspective select-none\"
+            className="w-full relative h-52 sm:h-64 md:h-72 cursor-pointer group perspective select-none"
           >
 
             <div
@@ -269,7 +269,7 @@ export default function FlashcardsView({
                     <Volume2 className="w-3 h-3" />
                   </button>
                 </div>
-                <p className=\"text-xs sm:text-sm md:text-base font-bold text-gray-900 leading-snug px-3 max-w-md\">
+                <p className="text-xs sm:text-sm md:text-base font-bold text-gray-900 leading-snug px-3 max-w-md">
                   {currentCard.question}
                 </p>
                 <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium pt-3 font-sans">

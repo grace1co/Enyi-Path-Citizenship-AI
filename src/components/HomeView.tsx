@@ -117,16 +117,16 @@ export default function HomeView({
           </div>
         </section>
 
-        <section className="lg:col-span-1 bg-white rounded-xl p-4 sm:p-6 border border-[#e5e7eb] flex flex-col justify-between min-h-min\">
+        <section className="lg:col-span-1 bg-white rounded-xl p-4 sm:p-6 border border-[#e5e7eb] flex flex-col justify-between min-h-min">
           <div className="space-y-3 sm:space-y-4">
-            <div className="flex justify-between items-center gap-2\">
-              <div className="flex items-center gap-1.5 text-primary min-w-0\">
-                <PlayCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4 shrink-0\" />
-                <span className=\"text-[9px] sm:text-[10px] font-bold uppercase tracking-wider font-sans select-none text-primary\">
+            <div className="flex justify-between items-center gap-2">
+              <div className="flex items-center gap-1.5 text-primary min-w-0">
+                <PlayCircle className="w-3.5 sm:w-4 h-3.5 sm:h-4 shrink-0" />
+                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider font-sans select-none text-primary">
                   Next Up
                 </span>
               </div>
-              <span className=\"bg-primary-container text-primary text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full select-none shrink-0\">
+              <span className="bg-primary-container text-primary text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full select-none shrink-0">
                 History
               </span>
             </div>
@@ -142,11 +142,11 @@ export default function HomeView({
 
             <div className="space-y-1.5 pt-1 text-gray-600 text-[10px] sm:text-xs font-medium">
               <div className="flex items-center gap-2">
-                <Award className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0 text-primary\" />
+                <Award className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0 text-primary" />
                 <span>10 Questions</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0 text-primary\" />
+                <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0 text-primary" />
                 <span>Est. 15 mins</span>
               </div>
             </div>
