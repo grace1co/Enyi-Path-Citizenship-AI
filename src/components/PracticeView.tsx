@@ -89,6 +89,15 @@ export default function PracticeView({
   React.useEffect(() => {
     if (!questions || questions.length === 0) return;
 
+    setReviewWrongEmpty(false);
+    setActiveQuestions([]);
+    setCurrentIndex(0);
+    setScore(0);
+    setAnswerLog([]);
+    setSelectedOption(null);
+    setIsChecked(false);
+    setShowFeedbackSummary(false);
+
     if (mode === "review-wrong") {
       const wrongQuestions = questions.filter(
         (q) => (questionProgress[String(q.id)]?.timesWrong ?? 0) > 0
