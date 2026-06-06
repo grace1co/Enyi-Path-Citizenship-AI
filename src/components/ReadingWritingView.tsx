@@ -326,7 +326,7 @@ export default function ReadingWritingView({
   const writingItem = data?.writing[writingIdx] || { id: 1, sentence: "The President lives in the White House.", audioText: "The President lives in the White House." };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in py-2">
+    <div className="max-w-3xl mx-auto min-w-0 space-y-6 animate-fade-in py-2">
       <div className="flex justify-between items-center bg-white border border-[#e5e7eb] p-4 rounded-xl shadow-sm">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary-container text-primary rounded-lg shrink-0">
@@ -749,7 +749,7 @@ export default function ReadingWritingView({
                 )}
 
                 {/* Breakdowns columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 py-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 py-2">
                   {/* Reading breakdown */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200">

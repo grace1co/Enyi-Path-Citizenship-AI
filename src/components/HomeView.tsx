@@ -24,8 +24,8 @@ export default function HomeView({
   const prepPercentage = Math.min(100, Math.max(0, stats.masteredQuestionsCount));
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start md:items-center gap-3 sm:gap-4">
+    <div id="home-view" className="space-y-8 animate-fade-in min-w-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start lg:items-center gap-3 sm:gap-4 min-w-0">
         <div className="min-w-0">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 tracking-tight break-words">
             Welcome Back, {profileName}
@@ -46,8 +46,8 @@ export default function HomeView({
       </div>
 
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        <section className="lg:col-span-2 bg-white rounded-xl border border-[#e5e7eb] p-4 sm:p-6 md:p-8 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 min-w-0">
+        <section className="xl:col-span-2 bg-white rounded-xl border border-[#e5e7eb] p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center min-w-0">
           {/* Circular progress visual */}
           <div className="relative w-28 sm:w-32 md:w-36 h-28 sm:h-32 md:h-36 flex-shrink-0 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -117,7 +117,7 @@ export default function HomeView({
           </div>
         </section>
 
-        <section className="lg:col-span-1 bg-white rounded-xl p-4 sm:p-6 border border-[#e5e7eb] flex flex-col justify-between min-h-min">
+        <section className="xl:col-span-1 bg-white rounded-xl p-4 sm:p-6 border border-[#e5e7eb] flex flex-col justify-between min-h-min min-w-0">
           <div className="space-y-3 sm:space-y-4">
             <div className="flex justify-between items-center gap-2">
               <div className="flex items-center gap-1.5 text-primary min-w-0">
@@ -162,8 +162,8 @@ export default function HomeView({
           </button>
         </section>
 
-        <section className="col-span-1 md:col-span-12 bg-primary-container rounded-xl border border-primary/10 p-6 hover:shadow-sm transition-all flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4 text-left">
+        <section className="col-span-1 xl:col-span-3 bg-primary-container rounded-xl border border-primary/10 p-6 hover:shadow-sm transition-all flex flex-col lg:flex-row items-center justify-between gap-6 min-w-0">
+          <div className="flex items-center gap-4 text-left min-w-0">
             <div className="w-12 h-12 rounded-lg bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm">
               <Brain className="w-6 h-6" />
             </div>
@@ -179,13 +179,13 @@ export default function HomeView({
           <button
             onClick={() => onChangeView("tutor")}
             id="chat-with-enyi"
-            className="w-full md:w-auto bg-primary text-white hover:bg-primary-hover font-medium px-5 py-2.5 rounded-lg text-xs shadow-sm transition-colors flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+            className="w-full lg:w-auto bg-primary text-white hover:bg-primary-hover font-medium px-5 py-2.5 rounded-lg text-xs shadow-sm transition-colors flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
           >
             Chat with Enyi AI
           </button>
         </section>
 
-        <section className="col-span-1 md:col-span-12 bg-white rounded-xl border border-[#e5e7eb] p-6">
+        <section className="col-span-1 xl:col-span-3 bg-white rounded-xl border border-[#e5e7eb] p-6 min-w-0">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-bold text-gray-900 flex items-center gap-2">
               <Activity className="w-4 h-4 text-gray-400" />
@@ -236,8 +236,8 @@ export default function HomeView({
         </section>
       </div>
 
-      <div className="rounded-xl overflow-hidden bg-gray-50/50 border border-gray-100 flex flex-col md:flex-row items-center justify-between p-6 gap-6 relative min-h-[160px]">
-        <div className="flex-1 space-y-1.5 text-left z-10">
+      <div className="rounded-xl overflow-hidden bg-gray-50/50 border border-gray-100 flex flex-col lg:flex-row items-center justify-between p-6 gap-6 relative min-h-[160px] min-w-0">
+        <div className="flex-1 min-w-0 space-y-1.5 text-left z-10">
           <h4 className="text-lg font-bold text-gray-900">Your Citizenship Journey</h4>
           <p className="text-xs text-[#6b7280] font-sans max-w-lg leading-relaxed">
             Keep studying – you’re getting closer to citizenship.

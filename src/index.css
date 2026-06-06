@@ -16,3 +16,35 @@
   --color-surface-variant: #e5e7eb;
   --color-surface-container-lowest: #ffffff;
 }
+
+@media (max-height: 700px) and (min-width: 768px) {
+  #app-main {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  #home-view {
+    row-gap: 1rem;
+  }
+
+  #home-view section,
+  #home-view > div:last-child {
+    padding: 1rem;
+  }
+
+  #tutor-view {
+    height: calc(100vh - 2rem);
+    min-height: 0;
+    gap: 1rem;
+  }
+
+  #tutor-view > div {
+    min-height: 0;
+  }
+
+  #mobile-bottom-nav {
+    height: 4rem;
+    padding-top: 0.25rem;
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+}

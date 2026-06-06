@@ -1064,12 +1064,12 @@ export default function TutorView({
   };
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col md:grid md:grid-cols-12 gap-6 h-[calc(100vh-185px)] sm:h-[calc(100vh-140px)] min-h-[480px] sm:min-h-[550px] animate-fade-in py-1 font-sans">
+    <div id="tutor-view" className="max-w-4xl mx-auto min-w-0 flex flex-col xl:grid xl:grid-cols-12 gap-6 h-[calc(100vh-185px)] sm:h-[calc(100vh-140px)] min-h-[480px] sm:min-h-[550px] animate-fade-in py-1 font-sans">
       <div 
         className={`${
           showMobileSidebar 
             ? "fixed inset-0 z-50 bg-black/40 flex justify-start p-4 transition-opacity" 
-            : "hidden md:flex md:col-span-4"
+            : "hidden xl:flex xl:col-span-4"
         } h-full select-none`}
         onClick={() => setShowMobileSidebar(false)}
       >
@@ -1243,7 +1243,7 @@ export default function TutorView({
       </div>
 
       
-      <div className="md:col-span-8 bg-white border border-[#e5e7eb] rounded-xl flex flex-col justify-between overflow-hidden flex-grow h-full">
+      <div className="xl:col-span-8 min-w-0 bg-white border border-[#e5e7eb] rounded-xl flex flex-col justify-between overflow-hidden flex-grow h-full">
         {activeMode === "interview" && interviewState === "idle" ? (
           <div className="p-8 flex flex-col items-center justify-center text-center h-full space-y-6 select-none max-w-md mx-auto">
            
@@ -1321,7 +1321,7 @@ export default function TutorView({
                 <button
                   type="button"
                   onClick={() => setShowMobileSidebar(true)}
-                  className="md:hidden p-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 flex items-center gap-1 cursor-pointer font-bold text-[10px]"
+                  className="xl:hidden p-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 flex items-center gap-1 cursor-pointer font-bold text-[10px]"
                   title="Open Study Modes & Previous Topics"
                 >
                   <Brain className="w-3.5 h-3.5 text-primary" />
@@ -1409,7 +1409,7 @@ export default function TutorView({
 
 
                 {interviewFlowState === "speaking" && (
-                  <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl p-4 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in border border-slate-705 relative overflow-hidden">
+                  <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl p-4 shadow-md flex flex-col lg:flex-row items-center justify-between gap-4 animate-fade-in border border-slate-705 relative overflow-hidden">
                     <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="flex items-center gap-3">
@@ -1434,11 +1434,11 @@ export default function TutorView({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 w-full md:w-auto z-10">
+                    <div className="flex items-center gap-2 shrink-0 w-full lg:w-auto z-10">
                       <button
                         type="button"
                         onClick={handlePauseOfficerToggle}
-                        className="flex-grow md:flex-none flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-bold text-white shadow-sm transition-all active:scale-95 cursor-pointer"
+                        className="flex-grow lg:flex-none flex items-center justify-center gap-1.5 py-1.5 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-[11px] font-bold text-white shadow-sm transition-all active:scale-95 cursor-pointer"
                       >
                         {isOfficerPaused ? <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" /> : <Pause className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />}
                         <span>{isOfficerPaused ? "Resume Audio" : "Pause Officer"}</span>
@@ -1447,7 +1447,7 @@ export default function TutorView({
                       <button
                         type="button"
                         onClick={handleSkipAudio}
-                        className="flex-grow md:flex-none flex items-center justify-center gap-1.5 py-1.5 px-3 bg-primary hover:bg-primary-hover text-white rounded-lg text-[11px] font-bold shadow-md transition-all active:scale-95 cursor-pointer"
+                        className="flex-grow lg:flex-none flex items-center justify-center gap-1.5 py-1.5 px-3 bg-primary hover:bg-primary-hover text-white rounded-lg text-[11px] font-bold shadow-md transition-all active:scale-95 cursor-pointer"
                       >
                         <SkipForward className="w-3.5 h-3.5 text-white" />
                         <span>Skip Audio</span>
@@ -1904,7 +1904,7 @@ export default function TutorView({
 
                       <div className="p-5">
                         <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Skills Rating Grid</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                           {[
                             { name: "Civics Knowledge", val: evaluationReport.breakdown?.civics, color: "bg-emerald-500" },
                             { name: "English Fluency", val: evaluationReport.breakdown?.fluency, color: "bg-blue-500" },
@@ -1927,7 +1927,7 @@ export default function TutorView({
                       </div>
 
 
-                      <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                      <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
                         <div className="p-5 space-y-3">
                           <div className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
                             <span>✅</span>
@@ -2036,7 +2036,7 @@ export default function TutorView({
                             <span>Conversational Pacing & Memorization</span>
                             <span className="text-gray-850 font-bold">Naturalness: {evaluationReport.naturalness.score || 82}%</span>
                           </div>
-                          <div className="grid md:grid-cols-2 gap-4">
+                          <div className="grid lg:grid-cols-2 gap-4">
                             <div className="bg-red-50/30 border border-red-100/60 p-3 rounded-xl space-y-1.5">
                               <span className="text-[9px] text-[#b45309] font-bold uppercase tracking-wider block">Sounded Memorized or Rehearsed</span>
                               <p className="text-[11px] text-gray-600 italic select-text leading-normal">
@@ -2123,7 +2123,7 @@ export default function TutorView({
                                     {isExpanded && (
                                       <div className="border-t border-gray-100 p-4 bg-gray-50/50 space-y-3">
                                         
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
                                           
                                           <div className="bg-emerald-50/40 border border-emerald-100/80 p-3 rounded-lg space-y-1 block">
                                             <span className="text-[9px] text-[#065f46] font-extrabold uppercase tracking-wide block select-none">

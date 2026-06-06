@@ -251,7 +251,7 @@ export default function ProgressView({
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in py-2">
+    <div className="max-w-4xl mx-auto min-w-0 space-y-6 animate-fade-in py-2">
       {/* Tab Segment Controls */}
       <div className="flex border-b border-gray-100 pb-px justify-between items-center flex-wrap gap-3">
         <div className="flex gap-2">
@@ -291,8 +291,8 @@ export default function ProgressView({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-[#e5e7eb] rounded-xl overflow-hidden p-6 shadow-sm">
-            <div className="lg:col-span-5 flex flex-col items-center justify-center p-2 border-b lg:border-b-0 lg:border-r border-gray-100 text-center space-y-3 font-sans">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-[#e5e7eb] rounded-xl overflow-hidden p-6 shadow-sm min-w-0">
+            <div className="lg:col-span-5 min-w-0 flex flex-col items-center justify-center p-2 border-b lg:border-b-0 lg:border-r border-gray-100 text-center space-y-3 font-sans">
               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider font-sans">Predicted Exam Readiness</span>
               <div className="relative w-28 h-28 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -320,7 +320,7 @@ export default function ProgressView({
               </div>
             </div>
 
-            <div className="lg:col-span-7 flex flex-col justify-between p-2 space-y-4">
+            <div className="lg:col-span-7 min-w-0 flex flex-col justify-between p-2 space-y-4">
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5 uppercase tracking-wide select-none">
                   <Lightbulb className="w-4 h-4 text-primary shrink-0 animate-pulse" />
@@ -409,7 +409,7 @@ export default function ProgressView({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 min-w-0">
             <div className="bg-white border border-[#e5e7eb] p-3 sm:p-4 rounded-lg sm:rounded-xl flex items-center gap-2.5 sm:gap-3">
               <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0 border border-amber-100">
                 <Medal className="w-4 sm:w-5 h-4 sm:h-5" />
@@ -460,7 +460,7 @@ export default function ProgressView({
               Complete practice exams, answer daily flashcards, and use Enyi AI lessons to unlock badges. Push yourself to become a U.S. Civics Expert!
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 pt-1">
               {badges.map((b) => (
                 <div
                   key={b.id}
@@ -486,7 +486,7 @@ export default function ProgressView({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0">
             <div className="bg-white border border-[#e5e7eb] p-5 rounded-xl space-y-4">
               <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5 uppercase tracking-wide select-none">
                 <BarChart2 className="w-3.5 h-3.5 text-gray-400" />
@@ -622,7 +622,7 @@ export default function ProgressView({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center py-1">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-center py-1">
                       <div className="bg-white border p-2 rounded-lg">
                         <span className="text-[9px] text-gray-400 block font-bold uppercase">Civics Score</span>
                         <span className="text-xs font-black text-[#10b981]">{item.breakdown?.civics}%</span>
@@ -679,7 +679,7 @@ export default function ProgressView({
               Based on common challenges, immigrants frequently face complexity on these specific questions due to subtle historical details or phrasing overlaps:
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
               {[
                 {
                   q: "What is one war fought by the United States in the 1800s?",

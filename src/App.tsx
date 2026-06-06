@@ -864,9 +864,9 @@ export default function App() {
   }
 
   return (
-    <div className="bg-[#fdfdfd] text-[#111827] font-sans min-h-screen flex antialiased">
+    <div className="bg-[#fdfdfd] text-[#111827] font-sans min-h-screen flex antialiased overflow-x-hidden">
       
-      <nav id="sidebar-nav" className="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 z-50 bg-white border-r border-[#e5e7eb] py-6 shrink-0 justify-between select-none">
+      <nav id="sidebar-nav" className="hidden xl:flex flex-col h-screen w-56 fixed left-0 top-0 z-50 bg-white border-r border-[#e5e7eb] py-6 shrink-0 justify-between select-none">
         <div className="space-y-6">
           <div className="px-6 flex items-center gap-2.5 mb-6">
             <EnyiLogo size={28} />
@@ -964,7 +964,7 @@ export default function App() {
         </div>
       </nav>
 
-      <header id="mobile-top-bar" className="md:hidden flex justify-between items-center w-full px-4 sm:px-5 h-14 z-40 bg-white border-b border-[#e5e7eb] fixed top-0 left-0 right-0 select-none">
+      <header id="mobile-top-bar" className="xl:hidden flex justify-between items-center w-full px-4 sm:px-5 h-14 z-40 bg-white border-b border-[#e5e7eb] fixed top-0 left-0 right-0 select-none">
         <div className="flex items-center gap-2 min-w-0">
           <EnyiLogo size={26} />
           <h1 className="font-bold text-sm sm:text-base text-[#1e3a8a] tracking-tight truncate">
@@ -990,9 +990,9 @@ export default function App() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col md:ml-72 min-h-screen w-full">
-        <main className="flex-grow pt-16 sm:pt-16 md:pt-6 pb-28 sm:pb-28 md:pb-6 px-3 sm:px-4 md:px-6 lg:px-8 max-w-full w-full">
-          <div className="w-full max-w-6xl mx-auto">
+      <div className="flex-1 min-w-0 flex flex-col xl:ml-72 min-h-screen w-full">
+        <main id="app-main" className="flex-grow min-w-0 pt-16 sm:pt-16 xl:pt-6 pb-28 sm:pb-28 xl:pb-6 px-3 sm:px-4 md:px-6 lg:px-8 max-w-full w-full overflow-x-hidden">
+          <div className="w-full max-w-6xl mx-auto min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeView}
@@ -1077,7 +1077,7 @@ export default function App() {
         </main>
       </div>
 
-      <nav id="mobile-bottom-nav" className="md:hidden fixed bottom-0 left-0 right-0 h-20 sm:h-20 bg-white/95 backdrop-blur-md border-t border-gray-100 flex items-center justify-around px-2 py-2 select-none z-40 shadow-lg pb-[env(safe-area-inset-bottom)]">
+      <nav id="mobile-bottom-nav" className="xl:hidden fixed bottom-0 left-0 right-0 h-20 sm:h-20 bg-white/95 backdrop-blur-md border-t border-gray-100 flex items-center justify-around px-2 py-2 select-none z-40 shadow-lg pb-[env(safe-area-inset-bottom)]">
         {[
           { id: "home", label: "Home", icon: Home },
           { id: "practice", label: "Practice", icon: BookOpen },

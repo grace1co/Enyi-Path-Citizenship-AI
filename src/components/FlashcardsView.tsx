@@ -125,7 +125,7 @@ export default function FlashcardsView({
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 animate-fade-in py-2">
+    <div className="max-w-xl mx-auto min-w-0 space-y-6 animate-fade-in py-2">
 
       <div className="space-y-4 text-center select-none font-sans">
         <h2 className="text-xl font-bold text-gray-900">Civics Flashcards</h2>

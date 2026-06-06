@@ -228,7 +228,7 @@ export default function PracticeView({
     }
 
     return (
-      <div className="max-w-2xl mx-auto space-y-6 animate-fade-in py-4 font-sans select-none">
+      <div className="max-w-2xl mx-auto min-w-0 space-y-6 animate-fade-in py-4 font-sans select-none">
         <div className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden p-6 md:p-8 space-y-6 text-center shadow-md">
           {/* Medal / Trophy Icon */}
           <div className="flex justify-center">
@@ -340,7 +340,7 @@ export default function PracticeView({
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in py-2">
+    <div className="max-w-3xl mx-auto min-w-0 space-y-6 animate-fade-in py-2">
       <div className="w-full">
         <div className="flex justify-between items-end mb-2 font-sans text-xs text-[#6b7280]">
           <span className="flex items-center gap-1.5 font-medium text-primary uppercase tracking-wide">
@@ -359,7 +359,7 @@ export default function PracticeView({
         </div>
       </div>
 
-      <div className="w-full bg-white rounded-xl p-6 md:p-8 border border-[#e5e7eb] shadow-sm">
+      <div className="w-full min-w-0 bg-white rounded-xl p-6 md:p-8 border border-[#e5e7eb] shadow-sm">
         <div className="flex items-center gap-2 mb-3 text-[10px] font-bold text-gray-400 tracking-wider uppercase font-sans">
           <span>Module: {currentQuestion.category}</span>
         </div>
