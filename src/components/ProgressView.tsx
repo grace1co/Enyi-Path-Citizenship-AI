@@ -127,33 +127,35 @@ export default function ProgressView({
   };
 
   const getCategoryMetrics = () => {
-    const defaults = {
-      "Principles of Democracy": { correct: 8, total: 10, current: 80, color: "bg-primary" },
-      "System of Government": { correct: 7, total: 10, current: 70, color: "bg-[#2563eb]" },
-      "American History": { correct: 6, total: 10, current: 60, color: "bg-emerald-500" },
-      "Rights & Responsibilities": { correct: 9, total: 10, current: 90, color: "bg-amber-500" },
+    const categoryStats: Record<string, { correct: number; total: number; color: string }> = {
+      "Principles of Democracy": { correct: 0, total: 0, color: "bg-primary" },
+      "System of Government": { correct: 0, total: 0, color: "bg-[#2563eb]" },
+      "American History": { correct: 0, total: 0, color: "bg-emerald-500" },
+      "Rights & Responsibilities": { correct: 0, total: 0, color: "bg-amber-500" },
     };
 
     sessions.forEach(s => {
       if (s.type === "Practice") {
         if (s.module.includes("Democracy") || s.module.includes("Civics")) {
-          defaults["Principles of Democracy"].correct += s.score;
-          defaults["Principles of Democracy"].total += s.totalQuestions;
+          categoryStats["Principles of Democracy"].correct += s.score;
+          categoryStats["Principles of Democracy"].total += s.totalQuestions;
         } else if (s.module.includes("History")) {
-          defaults["American History"].correct += s.score;
-          defaults["American History"].total += s.totalQuestions;
+          categoryStats["American History"].correct += s.score;
+          categoryStats["American History"].total += s.totalQuestions;
         } else if (s.module.includes("Government")) {
-          defaults["System of Government"].correct += s.score;
-          defaults["System of Government"].total += s.totalQuestions;
+          categoryStats["System of Government"].correct += s.score;
+          categoryStats["System of Government"].total += s.totalQuestions;
         } else {
-          defaults["Rights & Responsibilities"].correct += s.score;
-          defaults["Rights & Responsibilities"].total += s.totalQuestions;
+          categoryStats["Rights & Responsibilities"].correct += s.score;
+          categoryStats["Rights & Responsibilities"].total += s.totalQuestions;
         }
       }
     });
 
-    return Object.entries(defaults).map(([name, val]) => {
-      const accuracyValue = Math.min(100, Math.round((val.correct / val.total) * 100));
+    return Object.entries(categoryStats).map(([name, val]) => {
+      const accuracyValue = val.total > 0
+        ? Math.min(100, Math.round((val.correct / val.total) * 100))
+        : 0;
       return {
         name,
         accuracy: accuracyValue,
@@ -493,20 +495,26 @@ export default function ProgressView({
                 Accuracy Level by Civics Module
               </h3>
               <div className="space-y-4 pt-1">
-                {categoriesAccuracy.map((cat, idx) => (
-                  <div key={idx} className="space-y-1.5 font-sans">
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="text-gray-600 font-medium">{cat.name}</span>
-                      <span className="font-semibold text-gray-900">{cat.accuracy}% Accuracy</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${cat.color} transition-all duration-500`}
-                        style={{ width: `${cat.accuracy}%` }}
-                      />
-                    </div>
+                {categoriesAccuracy.every((cat) => cat.accuracy === 0) ? (
+                  <div className="text-center py-6 text-gray-400 text-xs">
+                    Complete a practice quiz to see your accuracy by topic.
                   </div>
-                ))}
+                ) : (
+                  categoriesAccuracy.map((cat, idx) => (
+                    <div key={idx} className="space-y-1.5 font-sans">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-gray-600 font-medium">{cat.name}</span>
+                        <span className="font-semibold text-gray-900">{cat.accuracy}% Accuracy</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${cat.color} transition-all duration-500`}
+                          style={{ width: `${cat.accuracy}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -520,7 +528,7 @@ export default function ProgressView({
                   The official USCIS Civics Test consists of 10 oral questions. You need to answer at least <strong>6 questions (60%)</strong> correctly to pass.
                 </p>
                 <div className="p-3 bg-emerald-50 text-emerald-950 rounded-xl border border-emerald-100 font-sans text-xs">
-                  <strong>Ready Status:</strong> Your predicted test passing probability is extremely high ($overallReadiness%). We suggest performing Simulated Officer Interviews in other modes.
+                  <strong>Ready Status:</strong> Your predicted test passing probability is extremely high ({overallReadiness}%). We suggest performing Simulated Officer Interviews in other modes.
                 </div>
               </div>
               <button
