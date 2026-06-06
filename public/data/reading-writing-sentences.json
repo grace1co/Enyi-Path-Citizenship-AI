@@ -1,0 +1,30 @@
+{
+  "reading": [
+    { "id": 1, "sentence": "Who was the first President?" },
+    { "id": 2, "sentence": "Where does the President live?" },
+    { "id": 3, "sentence": "Why do people come to America?" },
+    { "id": 4, "sentence": "What is the capital of the United States?" },
+    { "id": 5, "sentence": "When is Memorial Day?" },
+    { "id": 6, "sentence": "Who was Abraham Lincoln?" },
+    { "id": 7, "sentence": "How many states does the United States have?" },
+    { "id": 8, "sentence": "When is Flag Day?" },
+    { "id": 9, "sentence": "Where is the White House?" },
+    { "id": 10, "sentence": "What are the colors of the American flag?" },
+    { "id": 11, "sentence": "When is Thanksgiving?" },
+    { "id": 12, "sentence": "Who elects the Congress?" }
+  ],
+  "writing": [
+    { "id": 1, "sentence": "Washington was the first President.", "audioText": "Washington was the first President." },
+    { "id": 2, "sentence": "The President lives in the White House.", "audioText": "The President lives in the White House." },
+    { "id": 3, "sentence": "People come to America to be free.", "audioText": "People come to America to be free." },
+    { "id": 4, "sentence": "Washington D.C. is the capital.", "audioText": "Washington D.C. is the capital." },
+    { "id": 5, "sentence": "Memorial Day is in May.", "audioText": "Memorial Day is in May." },
+    { "id": 6, "sentence": "Lincoln was the President during the Civil War.", "audioText": "Lincoln was the President during the Civil War." },
+    { "id": 7, "sentence": "The United States has fifty states.", "audioText": "The United States has fifty states." },
+    { "id": 8, "sentence": "Flag Day is in June.", "audioText": "Flag Day is in June." },
+    { "id": 9, "sentence": "The White House is in Washington D.C.", "audioText": "The White House is in Washington D.C." },
+    { "id": 10, "sentence": "The American flag is red, white, and blue.", "audioText": "The American flag is red, white, and blue." },
+    { "id": 11, "sentence": "Thanksgiving is in November.", "audioText": "Thanksgiving is in November." },
+    { "id": 12, "sentence": "The people elect Congress.", "audioText": "The people elect Congress." }
+  ]
+}

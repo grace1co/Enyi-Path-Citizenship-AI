@@ -1,0 +1,23 @@
+{
+  "president": {
+    "name": "Donald Trump",
+    "party": "Republican Party",
+    "explanation": "Donald Trump is the President of the United States."
+  },
+  "vicePresident": {
+    "name": "JD Vance",
+    "explanation": "JD Vance serves as the Vice President of the United States."
+  },
+  "chiefJustice": {
+    "name": "John Roberts",
+    "explanation": "John Roberts is the 17th Chief Justice of the United States."
+  },
+  "speakerOfHouse": {
+    "name": "Mike Johnson",
+    "explanation": "Mike Johnson is the Speaker of the House of Representatives."
+  },
+  "governor": {
+    "name": "The current Governor of your state",
+    "explanation": "The Governor is the chief executive officer of their respective state/territorial government."
+  }
+}

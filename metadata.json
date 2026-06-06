@@ -1,0 +1,6 @@
+{
+  "name": "Enyi Path",
+  "description": "An AI-powered citizenship study companion designed to help immigrants master the USCIS civics test with practice sessions, interactive flashcards, and a responsive AI tutor.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
