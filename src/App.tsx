@@ -1073,6 +1073,7 @@ export default function App() {
                   }}
                   settings={settings}
                   setSettings={setSettings}
+                  token={token}
                   questionProgress={questionProgress}
                   mode={practiceMode}
                 />

@@ -601,6 +601,7 @@ export default function TutorView({
           mode: activeMode,
           personality,
           drillType,
+          language: settings?.explanationLanguage || "English",
         }),
       });
 

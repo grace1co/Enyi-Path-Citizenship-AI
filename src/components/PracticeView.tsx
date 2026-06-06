@@ -26,6 +26,7 @@ interface PracticeViewProps {
   onChangeView: (view: "home" | "practice" | "flashcards" | "tutor" | "progress") => void;
   settings?: any;
   setSettings?: any;
+  token?: string | null;
   questionProgress?: QuestionProgress;
   mode?: "practice" | "review-wrong";
 }
@@ -80,6 +81,7 @@ export default function PracticeView({
   onChangeView,
   settings,
   setSettings,
+  token,
   questionProgress = {},
   mode = "practice",
 }: PracticeViewProps) {
@@ -133,9 +135,16 @@ export default function PracticeView({
   }, []);
 
   const explanationStyle = settings?.explanationStyle || "normal";
-  const explanationLanguage = settings?.explanationLanguage || "English";
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    settings?.explanationLanguage || "English"
+  );
+
+  React.useEffect(() => {
+    setSelectedLanguage(settings?.explanationLanguage || "English");
+  }, [settings?.explanationLanguage]);
 
   const [aiTip, setAiTip] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [showFeedbackSummary, setShowFeedbackSummary] = useState(false);
 
@@ -216,6 +225,7 @@ export default function PracticeView({
     setSelectedOption(null);
     setIsChecked(false);
     setAiTip(null);
+    setAiError(null);
 
     if (currentIndex + 1 >= activeQuestions.length) {
       setShowFeedbackSummary(true);
@@ -225,42 +235,64 @@ export default function PracticeView({
   };
 
   const handleAskEnyiAI = async (styleOption?: "normal" | "simple", langOption?: string) => {
+    if (!currentQuestion || loadingAi) return;
+
     setLoadingAi(true);
+    setAiError(null);
     const activeStyle = styleOption || explanationStyle;
-    const activeLang = langOption || explanationLanguage;
+    const activeLang = langOption || selectedLanguage || settings?.explanationLanguage || "English";
+    const requestBody = {
+      messages: [
+        {
+          role: "user",
+          content: `Explain this civics question: ${currentQuestion.question}`,
+        },
+      ],
+      mode: "quiz-help",
+      style: activeStyle,
+      language: activeLang,
+      context: {
+        question: currentQuestion.question,
+        choices: currentQuestion.options || [],
+        correctAnswer: currentQuestion.correctAnswer,
+        selectedAnswer: selectedOption,
+        module: currentQuestion.category,
+        explanation: currentQuestion.explanation,
+      },
+    };
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              id: "quiz_prompt",
-              role: "user",
-              content: `Explain the citizenship test question: "${currentQuestion.question}"`,
-              timestamp: new Date().toISOString(),
-            }
-          ],
-          context: {
-            question: currentQuestion.question,
-            options: currentQuestion.options,
-            correctAnswer: currentQuestion.correctAnswer,
-            explanation: currentQuestion.explanation,
-            category: currentQuestion.category
-          },
-          mode: "quiz-help",
-          style: activeStyle,
-          language: activeLang,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) throw new Error("Tutor API failed");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to get Enyi explanation");
+      }
+
       const data = await response.json();
-      setAiTip(data.content);
+      const explanation =
+        data.reply ||
+        data.content ||
+        data.message ||
+        data.answer ||
+        "";
+
+      if (!explanation) {
+        throw new Error("Enyi returned an empty explanation");
+      }
+
+      setAiTip(explanation);
     } catch (err: any) {
       console.error(err);
-      setAiTip("Unable to generate an explanation right now. Please try again.");
+      setAiTip(null);
+      setAiError("Enyi AI could not load an explanation. Please try again.");
     } finally {
       setLoadingAi(false);
     }
@@ -268,10 +300,11 @@ export default function PracticeView({
 
   const handleStyleChange = (style: "normal" | "simple") => {
     if (setSettings) setSettings((prev: any) => ({ ...prev, explanationStyle: style }));
-    if (aiTip) handleAskEnyiAI(style, explanationLanguage);
+    if (aiTip) handleAskEnyiAI(style, selectedLanguage);
   };
 
   const handleLanguageChange = (lang: string) => {
+    setSelectedLanguage(lang);
     if (setSettings) setSettings((prev: any) => ({ ...prev, explanationLanguage: lang }));
     if (aiTip) handleAskEnyiAI(explanationStyle, lang);
   };
@@ -471,7 +504,7 @@ export default function PracticeView({
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 sm:gap-3 flex-wrap">
             <button
               onClick={() => handleAskEnyiAI()}
-              disabled={loadingAi}
+              disabled={!currentQuestion || loadingAi}
               className="flex items-center justify-center gap-1 sm:gap-1.5 bg-primary text-white hover:bg-primary-hover disabled:opacity-50 transition-colors font-bold text-[10px] sm:text-xs py-1.5 sm:py-2 px-3 sm:px-3.5 rounded-lg shrink-0 cursor-pointer shadow-sm active:scale-95 uppercase tracking-wide"
             >
               <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-white" />
@@ -507,7 +540,7 @@ export default function PracticeView({
               </div>
               <select
                 id="select-translation"
-                value={explanationLanguage}
+                value={selectedLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
                 className="w-full text-[9px] sm:text-[10px] pl-5 sm:pl-6.5 pr-1.5 sm:pr-2 py-1.5 sm:py-2 border border-gray-200 bg-white rounded-lg outline-none cursor-pointer font-semibold text-gray-700 hover:bg-gray-50/50 appearance-none text-center select-none"
               >
@@ -593,10 +626,19 @@ export default function PracticeView({
         <div className="bg-primary-container border border-primary/10 p-5 rounded-xl animate-fade-in space-y-2">
           <div className="flex items-center gap-1.5 text-primary font-bold text-xs font-sans">
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span>AI Tutor: ({explanationLanguage} Explanation style • {explanationStyle})</span>
+            <span>AI Tutor: ({selectedLanguage} Explanation style • {explanationStyle})</span>
           </div>
           <div className="text-xs text-gray-700 leading-relaxed font-sans whitespace-pre-line pl-5 font-medium bg-white/50 p-3 rounded-lg border border-primary/5">
             {aiTip}
+          </div>
+        </div>
+      )}
+
+      {aiError && (
+        <div className="bg-red-50 border border-red-100 p-4 rounded-xl animate-fade-in">
+          <div className="flex items-start gap-2.5 text-red-700">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <p className="text-xs font-medium leading-relaxed">{aiError}</p>
           </div>
         </div>
       )}

@@ -764,6 +764,29 @@ Officer Enyi: "Can you state your full legal name and define what 'naturalizatio
         }
       }
 
+      if (mode === "quiz-help" && context) {
+        const choices = Array.isArray(context.choices || context.options)
+          ? (context.choices || context.options)
+          : [];
+        const correctIndex = typeof context.correctAnswer === "string"
+          ? context.correctAnswer.toUpperCase().charCodeAt(0) - 65
+          : -1;
+        const correctChoice = choices[correctIndex] || context.correctAnswer || "the accepted USCIS answer";
+        const selectedText = context.selectedAnswer
+          ? `\nYour selected answer: ${context.selectedAnswer}`
+          : "";
+
+        return res.json({
+          content: `Enyi AI could not reach the live tutor service, but here is the study explanation for this quiz question:
+
+Question: ${context.question}
+Correct answer: ${correctChoice}${selectedText}
+
+${context.explanation || "Review the official USCIS civics concept behind this answer, then try explaining it in your own words before moving on."}`,
+          sources: retrievedSources,
+        });
+      }
+
       // If tutoring / general chat help mode
       const topMatch = retrievedSources[0];
       let reply = "";
@@ -823,6 +846,15 @@ When replying:
 - If providing historical facts (such as the Civil War, Abraham Lincoln, or the Constitution), briefly explain the 'why' to help them remember.
 - Limit response length to be readable on mobile cards (maximum 2-3 short paragraphs). Use bolding and structured bullet points to break down timelines or rules.`;
 
+    const shouldTranslate = language && language !== "English";
+    if (shouldTranslate) {
+      systemInstruction += `\n\nLANGUAGE RESPONSE RULE:
+- Respond primarily in ${language}.
+- Keep important USCIS/civics terms in English with the ${language} explanation next to them in parentheses so the learner can still memorize official terms.
+- Do not translate official proper nouns (e.g. "Congress", "Senate", "Constitution") in a way that changes their meaning.
+- Keep the answer natural, simple, and helpful for a citizenship learner.`;
+    }
+
     if (mode === "quiz-help" && context) {
       if (style === "simple") {
         systemInstruction += `\n\nEXPLANATION STYLES: "Explain Like I'm New to America".
@@ -833,15 +865,12 @@ When replying:
 - Provide an educational, thorough explanation detailing the historical background, facts, and relevance of the question.`;
       }
 
-      if (language && language !== "English") {
-        systemInstruction += `\n\nLANGUAGE TRANSLATION MANDATE:
-- Translate the final explanation entirely into ${language}.
-- Include the key English study terms in parentheses next to the translation so they can still memorize the official terms in English.`;
-      }
-
       systemInstruction += `\n\nContext: The user is currently stuck on a practice question.
 Question Context: ${JSON.stringify(context)}
-Identify the question, help them understand the history behind it, provide clever mnemonic tricks or hints to help them remember, and supportively explain why the correct answer is the right one. Do not just say 'The answer is X.' Explain *why* in simple terms so they master the content!`;
+Explain the quiz question clearly in simple citizenship-test language.
+Do not just give the answer. If the correct answer is available, explain why it is correct and why the learner should remember it.
+If the learner selected an answer, briefly connect your explanation to that selection without being harsh.
+Identify the question, help them understand the history behind it, and provide a short memory trick or hint when useful.`;
     } else if (mode === "interview") {
       let personalityBlock = "";
       if (personality === "real") {

@@ -161,32 +161,63 @@ export default function ProgressView({
 
   const weakestCategory = [...categoriesAccuracy].sort((a, b) => a.accuracy - b.accuracy)[0];
 
-  const overallReadiness = Math.min(
-    99,
-    Math.max(
-      45,
-      Math.round(
-        50 +
-          (stats.masteredQuestionsCount * 0.3) +
-          (stats.activeStreak * 1.5) +
-          ((stats.lastQuizScore || 7) * 1.5)
-      )
-    )
-  );
+  // Compute readiness from real per-question answer history
+  const totalAnswered = Object.values(questionProgress).reduce((s, p) => s + p.timesAnswered, 0);
+  const totalCorrect = Object.values(questionProgress).reduce((s, p) => s + (p.timesAnswered - p.timesWrong), 0);
+  const answerAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : null;
 
-  let readinessRating = "Needs Structured Study";
-  let ratingExplanation = "Focus on weak elements below. Keep up a daily streak to elevate retention.";
-  let ratingColor = "text-amber-500";
+  const categoriesAttempted = new Set(
+    Object.values(questionProgress).map((p) => normalizeModuleName(p.normalizedModule))
+  ).size;
+  const categorysCoverage = Math.min(100, Math.round((categoriesAttempted / 5) * 100));
 
-  if (overallReadiness >= 85) {
-    readinessRating = "Excellent Readiness";
-    ratingExplanation = "You are showing strong readiness. Keep practicing full interviews.";
-    ratingColor = "text-emerald-600";
-  } else if (overallReadiness >= 65) {
-    readinessRating = "On Track";
-    ratingExplanation = "On track to pass! Strengthen history dates to boost confidence.";
-    ratingColor = "text-primary";
-  }
+  const overallReadiness: number | null = answerAccuracy !== null
+    ? Math.min(99, Math.round(answerAccuracy * 0.75 + categorysCoverage * 0.25))
+    : null;
+
+  const getReadinessStatus = (score: number | null) => {
+    if (score === null) return {
+      label: "No Data Yet",
+      explanation: "Complete a practice quiz to calculate your predicted exam readiness.",
+      color: "text-gray-400",
+      badgeClass: "bg-gray-50 text-gray-500 border-gray-200",
+    };
+    if (score >= 90) return {
+      label: "Excellent Readiness",
+      explanation: "Outstanding accuracy across all topics. Keep practicing simulated interviews.",
+      color: "text-emerald-600",
+      badgeClass: "bg-emerald-50 text-emerald-950 border-emerald-100",
+    };
+    if (score >= 75) return {
+      label: "Strong — On Track",
+      explanation: "You're on track to pass. Reinforce weaker modules to reach the top tier.",
+      color: "text-primary",
+      badgeClass: "bg-blue-50 text-blue-950 border-blue-100",
+    };
+    if (score >= 60) return {
+      label: "Passing Range",
+      explanation: "You're in the passing zone. Focus on wrong answers to move into the strong range.",
+      color: "text-amber-600",
+      badgeClass: "bg-amber-50 text-amber-950 border-amber-100",
+    };
+    if (score >= 45) return {
+      label: "Almost There",
+      explanation: "Close to passing. Review missed questions and keep up daily practice.",
+      color: "text-orange-500",
+      badgeClass: "bg-orange-50 text-orange-950 border-orange-100",
+    };
+    return {
+      label: "Needs More Practice",
+      explanation: "Keep studying. Take a quiz every day and review each wrong answer carefully.",
+      color: "text-red-500",
+      badgeClass: "bg-red-50 text-red-950 border-red-100",
+    };
+  };
+
+  const readinessStatus = getReadinessStatus(overallReadiness);
+  const readinessRating = readinessStatus.label;
+  const ratingExplanation = readinessStatus.explanation;
+  const ratingColor = readinessStatus.color;
 
   const points = stats.studyPoints || 0;
   let userLevelName = "Novice Patriot";
@@ -300,13 +331,15 @@ export default function ProgressView({
                     fill="none"
                     stroke="currentColor"
                     strokeDasharray="263.8"
-                    strokeDashoffset={263.8 - (263.8 * overallReadiness) / 100}
+                    strokeDashoffset={263.8 - (263.8 * (overallReadiness ?? 0)) / 100}
                     strokeLinecap="round"
                     strokeWidth="6"
                   />
                 </svg>
                 <div className="absolute text-center">
-                  <span className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900">{overallReadiness}%</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900">
+                    {overallReadiness !== null ? `${overallReadiness}%` : "--"}
+                  </span>
                 </div>
               </div>
               <div className="space-y-1">
@@ -533,8 +566,10 @@ export default function ProgressView({
                 <p className="text-xs text-gray-600 leading-relaxed font-sans">
                   The official USCIS Civics Test consists of 10 oral questions. You need to answer at least <strong>6 questions (60%)</strong> correctly to pass.
                 </p>
-                <div className="p-3 bg-emerald-50 text-emerald-950 rounded-xl border border-emerald-100 font-sans text-xs">
-                  <strong>Ready Status:</strong> Your predicted test passing probability is extremely high ({overallReadiness}%). We suggest performing Simulated Officer Interviews in other modes.
+                <div className={`p-3 rounded-xl border font-sans text-xs ${readinessStatus.badgeClass}`}>
+                  <strong>Ready Status: {readinessStatus.label}</strong>
+                  {overallReadiness !== null && <span className="ml-1 opacity-70">({overallReadiness}% based on {totalAnswered} answered questions)</span>}
+                  <p className="mt-1 opacity-80">{readinessStatus.explanation}</p>
                 </div>
               </div>
               <button
