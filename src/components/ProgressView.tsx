@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { UserStats, StudySession, StudyPlanItem, Badge, QuestionProgress } from "../types";
+import { UserStats, StudySession, StudyPlanItem, Badge, Question, QuestionProgress } from "../types";
 import { normalizeModuleName } from "../utils/moduleMap";
 import {
   Medal,
@@ -24,6 +24,7 @@ import {
 interface ProgressViewProps {
   stats: UserStats;
   sessions: StudySession[];
+  questions?: Question[];
   onResetStats: () => void;
   onChangeView: (view: "home" | "practice" | "flashcards" | "tutor" | "progress") => void;
   settings?: any;
@@ -35,6 +36,7 @@ interface ProgressViewProps {
 export default function ProgressView({
   stats,
   sessions,
+  questions = [],
   onResetStats,
   onChangeView,
   settings,
@@ -56,7 +58,6 @@ export default function ProgressView({
       setIsPlanGenerated(true);
     }
     
-    // Load saved interview reports
     const savedHistory = localStorage.getItem("enyi_interview_history");
     if (savedHistory) {
       setInterviewHistory(JSON.parse(savedHistory));
@@ -160,6 +161,45 @@ export default function ProgressView({
   const categoriesAccuracy = getCategoryMetrics();
 
   const weakestCategory = [...categoriesAccuracy].sort((a, b) => a.accuracy - b.accuracy)[0];
+  const questionById = new Map(questions.map((q) => [String(q.id), q]));
+  const missedRecommendations = Object.entries(questionProgress)
+    .filter(([, prog]) => prog.timesWrong > 0)
+    .map(([questionId, prog]) => {
+      const question = questionById.get(questionId);
+      const moduleName = question?.category
+        ? normalizeModuleName(question.category)
+        : normalizeModuleName(prog.normalizedModule);
+      const userErrorRate = prog.timesAnswered > 0
+        ? Math.round((prog.timesWrong / prog.timesAnswered) * 100)
+        : 0;
+
+      return {
+        id: questionId,
+        questionText: question?.question || "Previously missed civics question",
+        moduleName,
+        misses: prog.timesWrong,
+        latestResult: prog.lastAnswerCorrect === true ? "Latest: Correct" : "Latest: Missed",
+        userErrorRate,
+      };
+    })
+    .sort((a, b) => b.misses - a.misses || b.userErrorRate - a.userErrorRate)
+    .slice(0, 3);
+
+  const weakModuleRecommendations = categoriesAccuracy
+    .filter((cat) => cat.hasData && cat.accuracy < 75)
+    .sort((a, b) => a.accuracy - b.accuracy)
+    .slice(0, 3);
+
+  const noDataModuleRecommendations = categoriesAccuracy
+    .filter((cat) => !cat.hasData)
+    .slice(0, 3);
+
+  const wrongAnswerCount = Object.values(questionProgress).filter((prog) => prog.timesWrong > 0).length;
+  const reviewWrongLabel = wrongAnswerCount === 1
+    ? "Review 1 Wrong Answer"
+    : wrongAnswerCount > 1
+      ? `Review ${wrongAnswerCount} Wrong Answers`
+      : "Review Wrong Answers";
 
   // Compute readiness from real per-question answer history
   const totalAnswered = Object.values(questionProgress).reduce((s, p) => s + p.timesAnswered, 0);
@@ -261,7 +301,7 @@ export default function ProgressView({
     {
       id: "interview_ready",
       title: "Interview Practice Complete",
-      description: "Completed USCIS Officer oral simulation test",
+      description: "Completed a mock interview",
       icon: "Mic",
       unlocked: sessions.some((s) => s.type === "Interview"),
       color: "border-emerald-200 bg-emerald-50/50 text-emerald-600"
@@ -430,7 +470,7 @@ export default function ProgressView({
                     <span>{weakestCategory ? weakestCategory.name : "American History Review Sessions"}</span>
                   </div>
                   <p className="text-[10px] text-gray-500 font-sans leading-normal pt-1">
-                    You can elevate your Predicted Exam Readiness by taking a custom simulated interview in the Tutor tab. Enyi AI Coach will diagnose and log your custom strengths.
+                    Try a mock interview in the Tutor tab to get a more detailed readiness breakdown.
                   </p>
                 </div>
               )}
@@ -521,13 +561,13 @@ export default function ProgressView({
                   <BarChart2 className="w-3.5 h-3.5 text-gray-400" />
                   Accuracy Level by Civics Module
                 </h3>
-                {onStartReviewWrong && (
+                {onStartReviewWrong && wrongAnswerCount > 0 && (
                   <button
                     onClick={onStartReviewWrong}
                     className="text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg cursor-pointer flex items-center gap-1.5 transition-colors shrink-0"
                   >
                     <AlertTriangle className="w-3 h-3" />
-                    Review Wrong Answers
+                    {reviewWrongLabel}
                   </button>
                 )}
               </div>
@@ -629,10 +669,10 @@ export default function ProgressView({
           <div className="bg-white border border-[#e5e7eb] p-5 rounded-xl space-y-4 font-sans">
             <div>
               <h3 className="text-xs font-bold text-gray-900 block select-none uppercase tracking-wide">
-                📁 Officer Mock Interview Case-History
+                Mock Interview History
               </h3>
               <p className="text-[10.5px] text-gray-400 font-sans">
-                Full-length supervisor diagnostic case files saved from your simulation sessions.
+                Reports from your mock interview sessions.
               </p>
             </div>
 
@@ -644,10 +684,10 @@ export default function ProgressView({
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="text-[9.5px] font-mono font-bold bg-[#1e40af]/10 text-[#1e40af] px-2 py-0.5 rounded">
-                            CASE: #{idx + 1}
+                            Session #{idx + 1}
                           </span>
                           <span className="text-xs font-black text-gray-800 uppercase tracking-tight">
-                            {item.drillType === "all" ? "Full USCIS Simulation" : `${item.drillType.toUpperCase()} Drill`}
+                            {item.drillType === "all" ? "Full Mock Interview" : `${item.drillType.toUpperCase()} Drill`}
                           </span>
                         </div>
                         <div className="text-[10.5px] text-gray-400">
@@ -691,7 +731,7 @@ export default function ProgressView({
                     </div>
 
                     <div className="space-y-1 bg-white border border-gray-150 p-3 rounded-lg text-left">
-                      <span className="text-[9.5px] text-amber-800 font-extrabold uppercase block select-none">📋 Officer Supervisor Comments:</span>
+                      <span className="text-[9.5px] text-amber-800 font-extrabold uppercase block select-none">Session Notes:</span>
                       <p className="text-[11px] text-gray-700 italic leading-relaxed">{item.officerNotes}</p>
                     </div>
 
@@ -710,51 +750,117 @@ export default function ProgressView({
               </div>
             ) : (
               <div className="text-center py-8 bg-gray-50/50 border border-dashed rounded-xl border-gray-200">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">No Simulated Interview Cases Registered</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">No Mock Interviews Yet</p>
                 <p className="text-[10.5px] text-gray-450 mt-1 max-w-sm mx-auto leading-normal">
-                  You haven't completed any oral naturalization interviews yet. Once you do, Supervisor diagnostics will populate here!
+                  No mock interviews yet. Once you complete one, your results will show up here.
                 </p>
               </div>
             )}
           </div>
 
-          {/* Common difficult questions (based on USCIS data) */}
           <div className="bg-white border border-[#e5e7eb] p-5 rounded-xl space-y-3">
             <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5 uppercase select-none font-sans">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Examples of questions many people find hard
+              Recommended Review
             </h3>
             <p className="text-xs text-gray-500 font-sans leading-relaxed">
-              Based on common challenges, immigrants frequently face complexity on these specific questions due to subtle historical details or phrasing overlaps:
+              Personalized practice suggestions based only on your quiz history.
             </p>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
-              {[
-                {
-                  q: "What is one war fought by the United States in the 1800s?",
-                  err: "68% error rate",
-                  sub: "Immigrants frequently select World War I due to date overlap.",
-                },
-                {
-                  q: "There are four amendments to the Constitution about who can vote. Describe one.",
-                  err: "59% error rate",
-                  sub: "Remembering specific amendment numbers (15th, 19th, 24th, 26th) is difficult.",
-                },
-                {
-                  q: "Under our Constitution, some powers belong to the states. What is one?",
-                  err: "52% error rate",
-                  sub: "Shared powers vs exclusive state powers gets confused with federal duties.",
-                }
-              ].map((item, id) => (
-                <div key={id} className="p-3.5 bg-gray-50/50 rounded-xl border border-gray-150 space-y-1.5 hover:bg-white transition-colors duration-200">
-                  <div className="flex justify-between items-start gap-2 border-b border-gray-100 pb-1.5 mb-1.5">
-                    <span className="text-xs font-bold text-slate-800 leading-tight block">{item.q}</span>
-                    <span className="text-[10px] font-extrabold text-red-500 whitespace-nowrap bg-red-50 px-1.5 py-0.5 rounded-md">{item.err}</span>
+            {totalAnswered === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm text-center space-y-2">
+                <p className="text-xs font-bold text-slate-700">No quiz history yet</p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Complete a practice quiz and Enyi Path will recommend what you personally need to review next.
+                </p>
+                <button
+                  onClick={() => onChangeView("practice")}
+                  className="mt-2 bg-primary hover:bg-primary-hover text-white font-medium px-4 py-2 rounded-lg text-xs cursor-pointer shadow-sm"
+                >
+                  Start Practice
+                </button>
+              </div>
+            ) : missedRecommendations.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
+                {missedRecommendations.map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+                    <div className="space-y-2">
+                      <span className="inline-flex max-w-full rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-red-600">
+                        {item.misses} {item.misses === 1 ? "miss" : "misses"}
+                      </span>
+                      <h4 className="text-xs font-bold text-slate-900 leading-relaxed">{item.questionText}</h4>
+                    </div>
+                    <div className="space-y-1 text-[10.5px] text-slate-500 font-sans">
+                      <p><strong className="text-slate-700">Module:</strong> {item.moduleName}</p>
+                      <p><strong className="text-slate-700">{item.latestResult}</strong> • Your miss rate: {item.userErrorRate}%</p>
+                    </div>
+                    {onStartReviewWrong && (
+                      <button
+                        onClick={onStartReviewWrong}
+                        className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2 rounded-lg text-xs cursor-pointer shadow-sm"
+                      >
+                        Review
+                      </button>
+                    )}
                   </div>
-                  <p className="text-[10.5px] text-gray-450 leading-relaxed font-sans">{item.sub}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : weakModuleRecommendations.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
+                {weakModuleRecommendations.map((item) => (
+                  <div key={item.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-slate-900">{item.name}</h4>
+                      <p className="text-[10.5px] text-slate-500 font-sans">
+                        Current accuracy: <strong className="text-slate-700">{item.accuracy}%</strong>
+                      </p>
+                    </div>
+                    <p className="text-[10.5px] text-slate-500 font-sans leading-relaxed">
+                      Suggested action: Practice 5 questions from this module.
+                    </p>
+                    <button
+                      onClick={() => onChangeView("practice")}
+                      className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2 rounded-lg text-xs cursor-pointer shadow-sm"
+                    >
+                      Practice
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : noDataModuleRecommendations.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
+                {noDataModuleRecommendations.map((item) => (
+                  <div key={item.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-slate-900">{item.name}</h4>
+                      <p className="text-[10.5px] text-slate-500 font-sans">No data yet</p>
+                    </div>
+                    <p className="text-[10.5px] text-slate-500 font-sans leading-relaxed">
+                      Suggested action: Answer a few questions here so recommendations can get sharper.
+                    </p>
+                    <button
+                      onClick={() => onChangeView("practice")}
+                      className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2 rounded-lg text-xs cursor-pointer shadow-sm"
+                    >
+                      Practice
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm text-center space-y-2">
+                <p className="text-xs font-bold text-slate-700">Nothing urgent to review</p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Your tracked modules are currently above the review threshold. Keep a steady practice rhythm to stay ready.
+                </p>
+                <button
+                  onClick={() => onChangeView("practice")}
+                  className="mt-2 bg-primary hover:bg-primary-hover text-white font-medium px-4 py-2 rounded-lg text-xs cursor-pointer shadow-sm"
+                >
+                  Continue Practice
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

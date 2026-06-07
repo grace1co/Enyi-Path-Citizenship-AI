@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Question, QuestionProgress, AnswerLogEntry } from "../types";
 import { normalizeModuleName } from "../utils/moduleMap";
 import {
@@ -146,7 +148,9 @@ export default function PracticeView({
   const [aiTip, setAiTip] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [isAiTipCollapsed, setIsAiTipCollapsed] = useState(false);
   const [showFeedbackSummary, setShowFeedbackSummary] = useState(false);
+  const currentQuestion = activeQuestions[currentIndex];
 
   if (reviewWrongEmpty) {
     return (
@@ -180,7 +184,6 @@ export default function PracticeView({
     );
   }
 
-  const currentQuestion = activeQuestions[currentIndex];
   const queryPrefixes = ["A", "B", "C", "D"];
 
   const handleSelectOption = (prefix: string) => {
@@ -226,6 +229,7 @@ export default function PracticeView({
     setIsChecked(false);
     setAiTip(null);
     setAiError(null);
+    setIsAiTipCollapsed(false);
 
     if (currentIndex + 1 >= activeQuestions.length) {
       setShowFeedbackSummary(true);
@@ -245,7 +249,7 @@ export default function PracticeView({
       messages: [
         {
           role: "user",
-          content: `Explain this civics question: ${currentQuestion.question}`,
+          content: `Explain this USCIS civics question: ${currentQuestion.question}`,
         },
       ],
       mode: "quiz-help",
@@ -289,6 +293,7 @@ export default function PracticeView({
       }
 
       setAiTip(explanation);
+      setIsAiTipCollapsed(false);
     } catch (err: any) {
       console.error(err);
       setAiTip(null);
@@ -534,12 +539,17 @@ export default function PracticeView({
               </button>
             </div>
 
-            <div className="relative shrink-0 w-28 sm:w-32">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wide whitespace-nowrap">
+                Enyi Response Language
+              </span>
+              <div className="relative w-28 sm:w-32">
               <div className="flex items-center gap-1 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 select-none">
                 <Globe className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
               </div>
               <select
-                id="select-translation"
+                id="select-explanation-language"
+                aria-label="Enyi Response Language"
                 value={selectedLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
                 className="w-full text-[9px] sm:text-[10px] pl-5 sm:pl-6.5 pr-1.5 sm:pr-2 py-1.5 sm:py-2 border border-gray-200 bg-white rounded-lg outline-none cursor-pointer font-semibold text-gray-700 hover:bg-gray-50/50 appearance-none text-center select-none"
@@ -551,8 +561,14 @@ export default function PracticeView({
               <div className="absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                 <ChevronDown className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
               </div>
+              </div>
             </div>
           </div>
+          {selectedLanguage !== "English" && (
+            <p className="text-[10px] text-gray-400 font-medium">
+              Official USCIS questions are shown in English. Enyi explanations will appear in {selectedLanguage}.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -624,13 +640,21 @@ export default function PracticeView({
 
       {aiTip && (
         <div className="bg-primary-container border border-primary/10 p-5 rounded-xl animate-fade-in space-y-2">
-          <div className="flex items-center gap-1.5 text-primary font-bold text-xs font-sans">
+          <button
+            type="button"
+            onClick={() => setIsAiTipCollapsed((prev) => !prev)}
+            className="w-full flex items-center justify-between gap-3 text-primary font-bold text-xs font-sans cursor-pointer text-left"
+            aria-expanded={!isAiTipCollapsed}
+          >
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
             <span>AI Tutor: ({selectedLanguage} Explanation style • {explanationStyle})</span>
+            <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${isAiTipCollapsed ? "" : "rotate-180"}`} />
+          </button>
+          {!isAiTipCollapsed && (
+          <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed font-sans bg-white/50 p-3 rounded-lg border border-primary/5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_strong]:font-bold">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiTip}</ReactMarkdown>
           </div>
-          <div className="text-xs text-gray-700 leading-relaxed font-sans whitespace-pre-line pl-5 font-medium bg-white/50 p-3 rounded-lg border border-primary/5">
-            {aiTip}
-          </div>
+          )}
         </div>
       )}
 

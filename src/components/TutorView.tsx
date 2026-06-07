@@ -55,6 +55,7 @@ export default function TutorView({
   settings,
   setSettings,
 }: TutorViewProps) {
+  const SILENCE_REVIEW_DELAY_MS = 5000;
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeMode, setActiveMode] = useState<"standard" | "interview">("standard");
@@ -282,29 +283,26 @@ export default function TutorView({
             }
           }
 
-          // Show the live transcript while the user speaks.
           if (finalTranscript || interimTranscript) {
             const currentCombined = (finalTranscript + interimTranscript).trim();
             if (currentCombined) {
               setInputText(currentCombined);
               latestTextRef.current = currentCombined;
 
-              // If Enyi mock interview is active, deal with the state transition to State 3 Review
               if (interviewStateRef.current === "running") {
-                // If Automated Conversation Mode is active, debounce auto-transition to Review State!
                 if (conversationModeRef.current) {
                   if (autoSubmitTimeoutRef.current) {
                     clearTimeout(autoSubmitTimeoutRef.current);
                   }
                   autoSubmitTimeoutRef.current = setTimeout(() => {
-                    // Decide we're done after silence -> go to State 3: REVIEW
+                    // Wait 5 seconds after silence before moving to review.
                     if (recognitionRef.current) {
                       try {
                         recognitionRef.current.stop();
                       } catch (e) {}
                     }
                     setInterviewFlowState("review");
-                  }, 2500); // 2.5 seconds of silence before transitioning to review state.
+                  }, SILENCE_REVIEW_DELAY_MS);
                 }
               } else {
                 if (conversationModeRef.current) {
@@ -526,15 +524,14 @@ export default function TutorView({
 
     setInterruptedMessage(null);
     if (activeMode === "interview") {
-      setInterviewFlowState("thinking"); // State 4: Officer Thinking
+      setInterviewFlowState("thinking");
     }
 
-    // Clear any active automatic submit timeouts immediately to prevent double posts
+    // Cancel any pending auto-submit before sending
     if (autoSubmitTimeoutRef.current) {
       clearTimeout(autoSubmitTimeoutRef.current);
     }
 
-    // Turn off active mic recording if sending is triggered
     if (isListening && recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -623,7 +620,7 @@ export default function TutorView({
 
       if (voiceEnabledRef.current) {
         if (activeMode === "interview" && interviewStateRef.current === "running") {
-          setInterviewFlowState("speaking"); // State 1: Officer Speaking
+          setInterviewFlowState("speaking");
         }
         speakText(
           aiMsg.content,
@@ -635,7 +632,7 @@ export default function TutorView({
         );
       } else {
         if (activeMode === "interview" && interviewStateRef.current === "running") {
-          setInterviewFlowState("speaking"); // State 1: Officer Speaking
+          setInterviewFlowState("speaking");
           if (conversationModeRef.current) {
             setTimeout(() => {
               if (conversationModeRef.current && interviewStateRef.current === "running" && !loadingRef.current) {
@@ -659,7 +656,6 @@ export default function TutorView({
         
         setInterviewQuestionsCount((c) => c + 1);
 
-        // Simple evaluation logic for oral response simulation
         if (lowerRes.includes("correct") || lowerRes.includes("yes") || lowerRes.includes("excellent")) {
           setInterviewScore((s) => s + 1);
         }
@@ -667,7 +663,7 @@ export default function TutorView({
         // End the mock interview after five questions
         if (interviewQuestionsCount >= 4) {
           setInterviewState("completed");
-          const decisionText = `OFFICIAL DECISION: Officer Enyi has completed your review. SCORE: ${interviewScore + 1}/5. STATUS: PASSED/COMPLETED!`;
+          const decisionText = `Practice summary: mock interview complete. Score: ${interviewScore + 1}/5.`;
           setOfficerDecision(decisionText);
 
           if (onAddSession) {
@@ -690,7 +686,7 @@ export default function TutorView({
       onAddMessage({
         id: "ai_err_" + Date.now(),
         role: "model",
-        content: "I apologize, but Enyi AI is momentarily organizing textbooks. Please ensure your setup contains active API credentials and try again shortly!",
+        content: "Enyi could not respond right now. Please try again in a moment.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       });
     } finally {
@@ -698,7 +694,7 @@ export default function TutorView({
     }
   };
 
-  const OFFLINE_QUESTIONS_DETAILS = [
+  const FALLBACK_QUESTIONS = [
     {
       question: "Can you state your full legal name and define what 'naturalization' means?",
       expectedKeywords: ["citizen", "become", "legal", "process"],
@@ -785,7 +781,7 @@ export default function TutorView({
     }
   ];
 
-  const compileQaPairsList = (messages: ChatMessage[]) => {
+  const buildAnswerList = (messages: ChatMessage[]) => {
     const list = [];
     for (let i = 0; i < messages.length; i++) {
       if (messages[i].role === "user") {
@@ -798,7 +794,7 @@ export default function TutorView({
         }
 
         // Find preceding model question
-        let prevQuestion = "Official Officer greeting or query.";
+        let prevQuestion = "Mock interview greeting or question.";
         for (let j = i - 1; j >= 0; j--) {
           if (messages[j].role === "model") {
             prevQuestion = messages[j].content;
@@ -811,9 +807,8 @@ export default function TutorView({
         let category = "Biography";
         let failReason = "Answers must be factually consistent and avoid filler hesitations like 'uh' or 'I think'.";
 
-        // Attempt exact matching on detailed question parameters
         const lowerQ = prevQuestion.toLowerCase();
-        const matchedOffline = OFFLINE_QUESTIONS_DETAILS.find(o => 
+        const matchedOffline = FALLBACK_QUESTIONS.find(o => 
           lowerQ.includes(o.question.toLowerCase().slice(0, 16)) || 
           o.question.toLowerCase().includes(lowerQ.slice(0, 16))
         );
@@ -824,7 +819,6 @@ export default function TutorView({
           category = matchedOffline.category;
           failReason = matchedOffline.failReason;
         } else {
-          // Rule base matching heuristics for AI mode dynamic questions
           if (lowerQ.includes("constitut")) {
             acceptedText = "The Constitution, the supreme law of the land.";
             matchedKeywords = ["constitution"];
@@ -876,15 +870,13 @@ export default function TutorView({
       if (response.ok) {
         const report = await response.json();
         
-        // Build interactive Q&A fails breakdown
         const enrichedReport = {
           ...report,
-          qaPairsList: compileQaPairsList(messagesHistory)
+          qaPairsList: buildAnswerList(messagesHistory)
         };
         
         setEvaluationReport(enrichedReport);
 
-        // Append to historical local records instantly
         const newCaseItem = {
           id: "case_" + Date.now(),
           date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }),
@@ -896,7 +888,7 @@ export default function TutorView({
           whatWentWell: enrichedReport.whatWentWell || [],
           areasToImprove: enrichedReport.areasToImprove || [],
           followUpQuestions: enrichedReport.followUpQuestions || [],
-          officerNotes: enrichedReport.officerNotes || "Mock Officer report successfully recorded to diagnostic files.",
+          officerNotes: enrichedReport.officerNotes || "Your mock interview report has been saved.",
           qaPairsList: enrichedReport.qaPairsList || []
         };
         
@@ -974,7 +966,7 @@ export default function TutorView({
     if (userAnswers.length > 0 && interviewState === "running") {
       setInterviewState("completed");
       setInterviewFlowState("thinking");
-      setOfficerDecision("OFFICIAL DECISION: Mock terminated early by Applicant. Compiling partial assessment report below.");
+      setOfficerDecision("Mock interview stopped early. Building a partial readiness report.");
       generateReadinessReport([...chatHistory], true);
     } else {
       setInterviewFlowState("idle");
@@ -999,7 +991,6 @@ export default function TutorView({
     setSelectedHistoryTopic(null);
     onClearHistory(); // clear screen to start fresh for context
     
-    // Reset interview & synthesis parameters safely
     setInterviewFlowState("idle");
     setInterviewState("idle");
     setInterviewScore(0);
@@ -1012,8 +1003,8 @@ export default function TutorView({
     }
 
     const welcomeMsg = mode === "standard"
-      ? "Greetings! I am Enyi AI, your citizenship study partner. Ask me any question about American governance, rights, or historical events, and I will explain in simple terms."
-      : "Welcome to the USCIS Oral Mock Officer Simulation! I will play the role of an official USCIS immigration testing officer. Let's practice! Reply with 'Start Mock' when you are ready, and I will ask you 10 questions one-by-one.";
+      ? "Hi! I'm Enyi, your citizenship study partner. Ask me anything about civics, history, or government."
+      : "Welcome to the mock interview. I'll act as a USCIS officer. Type 'Start Mock' when you're ready and I'll begin asking questions one at a time.";
 
     const msgId = "ai_welcome_" + Date.now();
     onAddMessage({
@@ -1035,7 +1026,7 @@ export default function TutorView({
     }
   };
 
-  const handleStartSimRoom = () => {
+  const handleStartInterview = () => {
     setLiveOfficerNotes([]);
     setExpandedQaIndex(null);
     setInterviewScore(0);
@@ -1256,13 +1247,12 @@ export default function TutorView({
             />
 
             <div className="space-y-2">
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">USCIS Oral Simulation Room</h3>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Mock Interview Room</h3>
               <p className="text-[10px] sm:text-xs text-gray-600 leading-relaxed">
                 The real test has 10 oral questions. You need 6 correct to pass.
               </p>
             </div>
 
-            {/* Show what the interview will cover */}
             <div className="w-full space-y-2 border border-gray-100 p-4 rounded-xl bg-gradient-to-br bg-gray-50/50 text-left">
               <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">Interview Phases Overview:</span>
               <div className="flex items-center gap-2.5 text-xs text-gray-700 font-medium">
@@ -1284,7 +1274,7 @@ export default function TutorView({
               <div className="w-full border border-amber-200/80 bg-amber-50/30 p-3 rounded-xl flex items-start gap-2.5 text-left">
                 <span className="text-base text-amber-600 animate-bounce">👑</span>
                 <div className="space-y-0.5">
-                  <span className="text-[9.5px] font-bold text-amber-800 uppercase tracking-wide block">Coaching History Log Target:</span>
+                  <span className="text-[9.5px] font-bold text-amber-800 uppercase tracking-wide block">Today's Practice Goal:</span>
                   <p className="text-[10.5px] text-amber-950/90 font-sans leading-normal font-semibold">
                     {todayCoachGoal}
                   </p>
@@ -1293,7 +1283,7 @@ export default function TutorView({
             )}
 
             <button
-              onClick={handleStartSimRoom}
+              onClick={handleStartInterview}
               className="w-full bg-primary hover:bg-primary-hover text-white font-extrabold py-3 rounded-xl text-xs shadow-md cursor-pointer tracking-wide uppercase flex items-center justify-center gap-1.5"
             >
               <UserCheck className="w-4 h-4 text-white" />
@@ -1310,10 +1300,10 @@ export default function TutorView({
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-gray-900 leading-none">
-                    {activeMode === "interview" ? "Officer Enyi (USCIS Simulation)" : "Enyi AI Tutor"}
+                    {activeMode === "interview" ? "Officer Enyi (Mock Interview)" : "Enyi AI Tutor"}
                   </h3>
                   <span className="text-[10px] text-emerald-600 font-medium font-sans mt-0.5 block">
-                    {activeMode === "interview" ? "Simulating Officer Interview" : "Active Study Companion"}
+                    {activeMode === "interview" ? "Mock interview active" : "Active study companion"}
                   </span>
                 </div>
               </div>
@@ -1478,7 +1468,7 @@ export default function TutorView({
                             <span>🎤 Listening... Speak Answer Now</span>
                           </h4>
                           <p className="text-[10.5px] text-slate-300 leading-normal">
-                            {conversationMode ? "Silence detection active: pause talking for 2.5 seconds to review." : "Press mic to submit."}
+                            {conversationMode ? "Silence detection is on. Pause for 5 seconds when you are ready to review." : "Press mic to submit."}
                           </p>
                         </div>
                       </div>
@@ -1607,9 +1597,9 @@ export default function TutorView({
                         <RefreshCw className="w-4 h-4 text-blue-600" />
                       </div>
                       <div className="space-y-0.5">
-                        <h4 className="text-xs font-black uppercase tracking-wider text-blue-800">⚡ State 4: Analyzing Response...</h4>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-blue-800">Reviewing Answer...</h4>
                         <p className="text-[10px] text-gray-500 font-bold">
-                          Officer Enyi's evaluator is assessing correctness, vocabulary comprehension, and follow-up flags.
+                          Officer Enyi is reviewing your answer...
                         </p>
                       </div>
                     </div>
@@ -1703,7 +1693,7 @@ export default function TutorView({
                           }
                         }}
                         title={showTranscript ? "" : "Click to peek at text"}
-                        className={`p-3.5 rounded-lg text-xs leading-relaxed font-sans whitespace-pre-wrap relative transition-all duration-200 ${
+                        className={`p-3.5 rounded-lg text-xs leading-relaxed font-sans relative transition-all duration-200 ${
                           isModel ? "bg-gray-50 text-gray-800 border border-[#e5e7eb] rounded-tl-none font-medium" : "bg-primary text-white rounded-tr-none font-medium"
                         } ${isPeekableHidden ? "filter blur-sm bg-gray-100/90 border-gray-300 text-gray-400 select-none cursor-pointer hover:bg-gray-100" : "text-left"}`}
                       >
@@ -1713,11 +1703,11 @@ export default function TutorView({
                             <span>Transcript hidden. Click to peek.</span>
                           </div>
                         ) : isModel ? (
-                          <div className="text-sm leading-relaxed [&_p]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mt-2 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mt-2 [&_ol]:mb-2 [&_strong]:font-semibold [&_a]:text-primary [&_a]:underline [&_code]:bg-slate-100 [&_code]:px-1 [&_code]:rounded-sm">
+                          <div className="prose prose-sm max-w-none text-gray-800 leading-relaxed [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_strong]:font-bold [&_a]:text-primary">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                           </div>
                         ) : (
-                          msg.content
+                          <span className="whitespace-pre-wrap">{msg.content}</span>
                         )}
                       </div>
 
@@ -1837,7 +1827,7 @@ export default function TutorView({
                     <div className="space-y-1 text-center">
                       <h4 className="font-extrabold text-xs text-emerald-800 uppercase tracking-widest">Mock Drill Finished</h4>
                       <p className="text-[11px] text-gray-500">
-                        Evaluations compiled successfully. Your results have been posted to your historic logs database.
+                        Your results have been saved.
                       </p>
                     </div>
                   </div>
@@ -1846,9 +1836,9 @@ export default function TutorView({
                     <div className="p-6 border border-blue-100 rounded-xl bg-blue-50/30 text-center space-y-3.5 animate-pulse">
                       <Loader className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
                       <div>
-                        <h4 className="font-bold text-xs text-blue-900">Evaluating Readiness Metrics...</h4>
+                        <h4 className="font-bold text-xs text-blue-900">Building Readiness Report...</h4>
                         <p className="text-[10px] text-blue-600 mt-1.5 leading-normal">
-                          USCIS mock analytics engine is reviewing your grammar pacing, vocabulary understanding, confidence filler tallies, and travel chronologies.
+                          Reviewing your responses and building your report...
                         </p>
                       </div>
                     </div>
@@ -2073,7 +2063,7 @@ export default function TutorView({
                                 <span>🔍</span> Interactive Response & Failure Analysis
                               </h4>
                               <p className="text-[10.5px] text-gray-500 font-sans leading-relaxed mt-0.5">
-                                Select any interview response below to expand comprehensive USCIS guidelines, expected keywords, and supervisor failure explanations.
+                                Select any response below to review expected keywords and suggestions.
                               </p>
                             </div>
 
@@ -2128,7 +2118,7 @@ export default function TutorView({
                                           
                                           <div className="bg-emerald-50/40 border border-emerald-100/80 p-3 rounded-lg space-y-1 block">
                                             <span className="text-[9px] text-[#065f46] font-extrabold uppercase tracking-wide block select-none">
-                                              Passed USCIS Formulation Guidelines:
+                                              Expected answer:
                                             </span>
                                             <p className="text-[11px] text-gray-750 font-sans leading-normal font-medium">
                                               {pair.acceptedAnswer}
@@ -2138,7 +2128,7 @@ export default function TutorView({
                                           {/* Why the answer might fail the real test */}
                                           <div className="bg-red-50/40 border border-red-100/60 p-3 rounded-lg space-y-1">
                                             <span className="text-[9px] text-[#991b1b] font-extrabold uppercase tracking-wide block select-none">
-                                              Why might this fail / Officer Red Flags:
+                                              What to improve:
                                             </span>
                                             <p className="text-[10.5px] text-gray-700 leading-normal font-sans">
                                               {pair.failReason}
@@ -2188,14 +2178,11 @@ export default function TutorView({
                         <div className="space-y-2">
                           <label className="text-[10px] text-amber-800 font-extrabold uppercase tracking-widest flex items-center gap-1">
                             <span>📋</span>
-                            <span>USCIS Officer Supervisor Case Notes</span>
+                            <span>Session Notes</span>
                           </label>
                           <p className="text-[11px] text-gray-700 italic leading-relaxed border-l-2 border-amber-300 pl-3 select-text select-all">
                             {evaluationReport.officerNotes}
                           </p>
-                          <div className="text-right pt-1">
-                            <span className="text-[9px] text-gray-400 font-mono">CASE REGISTERED ID: {Date.now().toString().slice(-8)} (MOCK-REVIEW)</span>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -2207,7 +2194,7 @@ export default function TutorView({
                       onClick={handleResetSim}
                       className="flex-grow bg-[#2563eb] hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl text-xs shadow-md cursor-pointer tracking-wider uppercase active:scale-95 transition-all"
                     >
-                      Restart Sim Practice
+                      Restart Mock Interview
                     </button>
                     <button
                       onClick={() => handleModeToggle("standard")}
@@ -2219,7 +2206,7 @@ export default function TutorView({
                 </div>
               )}
 
-              {/* Show spinner while AI thinks */}
+              {/* Loading indicator */}
               {loading && (
                 <div className="flex gap-3 max-w-[80%] mr-auto text-left">
                   <div className="w-7 h-7 rounded-full bg-primary text-white shrink-0 flex items-center justify-center font-bold text-[10px] animate-pulse">

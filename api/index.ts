@@ -446,6 +446,15 @@ function getActiveApiKey(): "gemini" | null {
   return hasGemini ? "gemini" : null;
 }
 
+function parseTranslationArray(rawText: string): string[] {
+  const trimmed = rawText.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+  const parsed = JSON.parse(trimmed);
+  if (!Array.isArray(parsed) || !parsed.every((item) => typeof item === "string")) {
+    throw new Error("Translation response was not a string array.");
+  }
+  return parsed;
+}
+
 interface OfflineQuestion {
   question: string;
   expectedKeywords: string[];
@@ -517,6 +526,48 @@ const OFFLINE_QUESTIONS: OfflineQuestion[] = [
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
+});
+
+app.post("/api/translate", authenticate, async (req: any, res: any) => {
+  try {
+    const { texts, targetLang } = req.body;
+
+    if (!Array.isArray(texts) || texts.some((text) => typeof text !== "string")) {
+      return res.status(400).json({ error: "texts must be an array of strings" });
+    }
+
+    if (!targetLang || targetLang === "English") {
+      return res.json({ translations: texts });
+    }
+
+    if (getActiveApiKey() === null) {
+      return res.status(503).json({ error: "Translation requires GEMINI_API_KEY." });
+    }
+
+    const ai = getAiClient();
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Translate each string into ${targetLang}. Keep USCIS/civics proper nouns and official terms recognizable. Return only a valid JSON array of strings in the same order, with no Markdown.\n\n${JSON.stringify(texts)}`,
+            },
+          ],
+        },
+      ],
+      config: {
+        temperature: 0.1,
+      },
+    });
+
+    const translations = parseTranslationArray(response.text || "[]");
+    return res.json({ translations });
+  } catch (error: any) {
+    console.error("Translation Error:", error);
+    return res.status(500).json({ error: error.message || "Failed to translate quiz text." });
+  }
 });
 
 app.post("/api/auth/register", async (req: any, res: any) => {
@@ -847,7 +898,7 @@ app.post("/api/chat", authenticate, async (req: any, res: any) => {
             return res.json({ content: reply, sources: retrievedSources });
           }
 
-          const reply = `${feedback}\n\nOfficer Enyi: "Thank you, applicant. This completes the questions for your offline simulated interview! I have compiled your offline Naturalization Readiness feedback. Please press the 'End Interview & Render Report' button to see your supervisor report."`;
+          const reply = `${feedback}\n\nOfficer Enyi: "Thank you. This completes the questions for your offline mock interview. I have prepared your readiness feedback. Please press the 'End Interview & Render Report' button to see your session report."`;
           return res.json({ content: reply, sources: [] });
         }
 
@@ -890,6 +941,15 @@ When replying:
 - If providing historical facts (such as the Civil War, Abraham Lincoln, or the Constitution), briefly explain the 'why' to help them remember.
 - Limit response length to be readable on mobile cards (maximum 2-3 short paragraphs). Use bolding and structured bullet points to break down timelines or rules.`;
 
+    const shouldTranslate = language && language !== "English";
+    if (shouldTranslate) {
+      systemInstruction += `\n\nLANGUAGE RESPONSE RULE:
+- Respond primarily in ${language}.
+- Keep important USCIS/civics terms in English with the ${language} explanation next to them in parentheses so the learner can still memorize official terms.
+- Do not translate official proper nouns (e.g. "Congress", "Senate", "Constitution") in a way that changes their meaning.
+- Keep the answer natural, simple, and helpful for a citizenship learner.`;
+    }
+
     if (mode === "quiz-help" && context) {
       if (style === "simple") {
         systemInstruction += `\n\nEXPLANATION STYLES: "Explain Like I'm New to America".
@@ -900,15 +960,12 @@ When replying:
 - Provide an educational, thorough explanation detailing the historical background, facts, and relevance of the question.`;
       }
 
-      if (language && language !== "English") {
-        systemInstruction += `\n\nLANGUAGE TRANSLATION MANDATE:
-- Translate the final explanation entirely into ${language}.
-- Include the key English study terms in parentheses next to the translation so they can still memorize the official terms in English.`;
-      }
-
       systemInstruction += `\n\nContext: The user is currently stuck on a practice question.
 Question Context: ${JSON.stringify(context)}
-Identify the question, help them understand the history behind it, provide clever mnemonic tricks or hints to help them remember, and supportively explain why the correct answer is the right one. Do not just say 'The answer is X.' Explain *why* in simple terms so they master the content!`;
+Explain the quiz question clearly in simple citizenship-test language.
+Do not just give the answer. If the correct answer is available, explain why it is correct and why the learner should remember it.
+If the learner selected an answer, briefly connect your explanation to that selection without being harsh.
+Identify the question, help them understand the history behind it, and provide a short memory trick or hint when useful.`;
     } else if (mode === "interview") {
       let personalityBlock = "";
       if (personality === "real") {
@@ -988,7 +1045,7 @@ INTERVIEW PATTERNS (derived from real transcript recordings of successful natura
         temperature: 0.5,
       },
     });
-    const reply = response.text || "I apologize, but I could not compute a response. Please try again!";
+    const reply = response.text || "Enyi could not respond right now. Please try again in a moment.";
 
     res.json({ content: reply, sources: retrievedSources });
   } catch (error: any) {
@@ -1176,7 +1233,7 @@ Return valid JSON with the EXACT structure (do not include markdown syntax aroun
     "<Potential officer follow-up question 3 e.g., 'Can you describe what tasks you perform at your company?'>"
   ],
   "confidenceNotes": "<A 2-3 sentence assessment of filler words, hesitation markers like 'uh' or uncertainty indicators>",
-  "officerNotes": "<Professional reviewer supervisor case note summary describing their readiness, potential problem areas, and final supervisor review advice. Write as if you are preparing the applicant for a real USCIS interview next week. Keep it highly objective, highly realistic.>"
+  "officerNotes": "<Professional reviewer session note summary describing their readiness, potential problem areas, and practical advice. Write as if you are preparing the applicant for a real USCIS interview next week. Keep it objective and realistic.>"
 }`;
 
     const response = await ai.models.generateContent({

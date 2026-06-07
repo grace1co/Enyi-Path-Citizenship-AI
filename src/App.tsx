@@ -237,7 +237,7 @@ export default function App() {
     {
       id: "welcome_init",
       role: "model",
-      content: "Good morning, " + profileName + "! I am Enyi AI, your citizenship study partner. Ask me any question about American history, First Amendment rights, or government guidelines to get helpful simplifications.",
+      content: "Hi " + profileName + "! I'm Enyi, your citizenship study partner. Ask me anything about civics, history, or government.",
       timestamp: "10:00 AM",
     },
   ]);
@@ -380,7 +380,7 @@ export default function App() {
     setChatHistory((prev) => {
       const copy = [...prev];
       if (copy.length > 0 && copy[0].id === "welcome_init") {
-        copy[0].content = `Greetings, ${profileName}! I am Enyi AI, your citizenship study partner. Ask me any question about American history, First Amendment rights, or government guidelines to get helpful simplifications.`;
+        copy[0].content = `Hi ${profileName}! I'm Enyi, your citizenship study partner. Ask me anything about civics, history, or government.`;
       }
       return copy;
     });
@@ -745,7 +745,6 @@ export default function App() {
 
   // Save quiz results
   const handleCompleteQuiz = (score: number, answerLog: AnswerLogEntry[] = []) => {
-    // Update cumulative per-question progress
     const updatedProgress = { ...questionProgress };
     answerLog.forEach(({ questionId, isCorrect, normalizedModule }) => {
       const key = String(questionId);
@@ -929,7 +928,7 @@ export default function App() {
               onClick={() => {
                 setPracticeMode("practice");
                 setActiveView("practice");
-                handleToggleMastery(0); // slight wake-state updates
+                handleToggleMastery(0);
               }}
               id="sidebar-cta-start-quiz"
               className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2.5 px-4 rounded-xl text-xs tracking-wider uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2 hover:shadow active:scale-95"
@@ -1113,6 +1112,7 @@ export default function App() {
                 <ProgressView
                   stats={stats}
                   sessions={sessions}
+                  questions={questions}
                   onResetStats={handleResetMetrics}
                   onChangeView={setActiveView}
                   settings={settings}
@@ -1182,7 +1182,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Guest Callout Banner */}
               {token === "guest-token" && (
                 <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-2.5 shadow-xs">
                   <div className="flex items-center gap-1.5 text-amber-800">
@@ -1205,7 +1204,6 @@ export default function App() {
               )}
 
               <form onSubmit={handleSaveProfile} className="space-y-6">
-                {/* ACCOUNT SECTION (Only for Signed-in Users) */}
                 {token !== "guest-token" && (
                   <div className="space-y-4 border-b border-gray-100 pb-5">
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
@@ -1238,7 +1236,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* STUDY PREFERENCES SECTION */}
                 <div className="space-y-4 border-b border-gray-100 pb-5">
                   <h4 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest flex items-center gap-1">
                     <BookOpen className="w-3.5 h-3.5" />
@@ -1322,7 +1319,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* VOICE PREFERENCES SECTION */}
                 <div className="space-y-4 border-b border-gray-100 pb-5">
                   <h4 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest flex items-center gap-1">
                     <Mic className="w-3.5 h-3.5" />
@@ -1343,7 +1339,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* PROGRESS/METRICS SECTION */}
                 <div className="space-y-4 pt-1">
                   <h4 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest flex items-center gap-1">
                     <Activity className="w-3.5 h-3.5" />
@@ -1359,7 +1354,6 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* SUBMIT BUTTONS */}
                 <button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl text-xs tracking-wider uppercase transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
@@ -1369,7 +1363,6 @@ export default function App() {
                 </button>
               </form>
 
-              {/* OUT OF ACCOUNT ACTIONS */}
               {token !== "guest-token" && (
                 <div className="pt-4 border-t border-gray-150 space-y-2">
                   <button

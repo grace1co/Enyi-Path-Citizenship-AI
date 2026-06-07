@@ -48,7 +48,6 @@ export default function HomeView({
       
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 min-w-0">
         <section className="xl:col-span-2 bg-white rounded-xl border border-[#e5e7eb] p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center min-w-0">
-          {/* Circular progress visual */}
           <div className="relative w-28 sm:w-32 md:w-36 h-28 sm:h-32 md:h-36 flex-shrink-0 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
               <circle

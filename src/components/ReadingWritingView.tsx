@@ -156,7 +156,6 @@ export default function ReadingWritingView({
     }
   };
 
-  // ----- SPEECH TO TEXT SETUP -----
   const startSTT = () => {
     if (typeof window === "undefined") return;
     const SpeechRecognition =
@@ -215,7 +214,6 @@ export default function ReadingWritingView({
     setIsRecording(false);
   };
 
-  // ----- EVALUATORS -----
   const verifyReading = (correctText: string) => {
     if (!vocalTranscript) return;
     setReadingChecked(true);
@@ -289,7 +287,7 @@ export default function ReadingWritingView({
     }
   };
 
-  // Helper word-by-word renderer for Reading Results Highlights
+  // Highlight which words the user said correctly
   const renderReadingWordFeedback = (correctText: string) => {
     const rawTarget = correctText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").split(/\s+/);
     const spokenNorm = vocalTranscript.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "");
@@ -317,7 +315,7 @@ export default function ReadingWritingView({
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center bg-white border border-[#e5e7eb] rounded-xl shadow-sm">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <p className="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Loading Reading & Writing Lessons...</p>
+        <p className="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Loading...</p>
       </div>
     );
   }
@@ -445,7 +443,6 @@ export default function ReadingWritingView({
                 </p>
               </div>
 
-              {/* Target Sentence */}
               {testReadingSentences[testReadingIndex] && (
                 <div className="bg-[#fbfcff] p-6 rounded-xl border border-blue-50 flex justify-between items-center gap-6">
                   <p className="text-base sm:text-lg md:text-xl font-bold text-gray-900 leading-normal select-none">
@@ -465,7 +462,6 @@ export default function ReadingWritingView({
                 </div>
               )}
 
-              {/* Voice Recorder Block */}
               <div className="space-y-4">
                 <div className="flex flex-col items-center justify-center py-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
                   <button
@@ -484,7 +480,6 @@ export default function ReadingWritingView({
                   </p>
                 </div>
 
-                {/* Spoken results if any */}
                 {vocalTranscript && (
                   <div className="space-y-1.5 p-4 bg-[#fbfcfd] border border-gray-200 rounded-xl">
                     <span className="text-[10px] font-extrabold text-blue-600 block uppercase tracking-wider select-none">Voice Detected:</span>
@@ -502,7 +497,6 @@ export default function ReadingWritingView({
                   </button>
                 )}
 
-                {/* Verdict Feedback */}
                 {readingChecked && (
                   <div className="space-y-4 animate-fade-in font-sans">
                     {readingPassed ? (
@@ -536,7 +530,6 @@ export default function ReadingWritingView({
                       </div>
                     )}
 
-                    {/* Test Navigation buttons */}
                     <div className="flex justify-end pt-2">
                       {readingPassed ? (
                         <button
@@ -667,7 +660,6 @@ export default function ReadingWritingView({
                       </div>
                     )}
 
-                    {/* Test Navigation buttons */}
                     <div className="flex justify-end pt-2">
                       {writingPassed ? (
                         <button
@@ -712,7 +704,6 @@ export default function ReadingWritingView({
 
           {testStage === "completed" && (
             <div className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden shadow-md">
-              {/* Certificate Header Banner */}
               <div className="p-6 text-center space-y-3 bg-[#f8fafc] border-b border-gray-100 select-none">
                 <div className="w-16 h-16 bg-[#d1fae5] text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
                   <CheckCircle className="w-8 h-8" />
@@ -723,7 +714,6 @@ export default function ReadingWritingView({
                 </div>
               </div>
 
-              {/* Section Scores */}
               <div className="p-6 space-y-6">
                 {testReadingResult === "passed" && testWritingResult === "passed" ? (
                   <div className="bg-[#ecfdf5] border border-[#a7f3d0] rounded-xl p-5 flex items-start gap-3.5">
@@ -748,9 +738,7 @@ export default function ReadingWritingView({
                   </div>
                 )}
 
-                {/* Breakdowns columns */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 py-2">
-                  {/* Reading breakdown */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200">
                       <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">I. Reading Test</span>
@@ -767,7 +755,6 @@ export default function ReadingWritingView({
                         <span className="font-bold text-gray-800">{testReadingAttempts.length} of 3</span>
                       </div>
                       
-                      {/* List attempts */}
                       <div className="space-y-1.5 pt-1.5">
                         {testReadingAttempts.map((item, i) => (
                           <div key={i} className="bg-white border border-gray-100 p-2.5 rounded-lg text-xs space-y-1">
@@ -785,7 +772,6 @@ export default function ReadingWritingView({
                     </div>
                   </div>
 
-                  {/* Writing breakdown */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200">
                       <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">II. Writing Test</span>
@@ -802,7 +788,6 @@ export default function ReadingWritingView({
                         <span className="font-bold text-gray-800">{testWritingAttempts.length} of 3</span>
                       </div>
 
-                      {/* List attempts */}
                       <div className="space-y-1.5 pt-1.5">
                         {testWritingAttempts.map((item, i) => (
                           <div key={i} className="bg-white border border-gray-100 p-2.5 rounded-lg text-xs space-y-1">
@@ -822,7 +807,6 @@ export default function ReadingWritingView({
                 </div>
               </div>
 
-              {/* Footer buttons */}
               <div className="p-6 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-3.5 text-center">
                 <button
                   onClick={() => {
@@ -854,13 +838,11 @@ export default function ReadingWritingView({
                 <span className="font-mono text-[#1e3a8a] font-semibold">SENTENCE {readingIdx + 1} OF {data?.reading.length || 1}</span>
               </div>
 
-              {/* Large Sentence Display Card */}
               <div className="bg-[#fbfcff] p-6 rounded-xl border border-blue-50 flex justify-between items-center gap-6">
                 <p className="text-lg md:text-xl font-bold font-headline select-none text-gray-900 leading-normal">
                   {readingItem.sentence}
                 </p>
 
-                {/* Listen pronounciation */}
                 <button
                   onClick={() => handleSpeakSample(readingItem.sentence)}
                   className={`p-3 rounded-xl border shrink-0 transition-colors cursor-pointer ${
@@ -874,7 +856,6 @@ export default function ReadingWritingView({
                 </button>
               </div>
 
-              {/* Microphone Interactive Speaking Area */}
               <div className="space-y-4">
                 <div className="flex flex-col items-center justify-center py-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
                   <button
@@ -893,7 +874,6 @@ export default function ReadingWritingView({
                   </p>
                 </div>
 
-                {/* Vocal Transcript Box */}
                 {vocalTranscript && (
                   <div className="space-y-1.5 p-4 bg-[#fbfcfd] border border-gray-200 rounded-xl">
                     <span className="text-[10px] font-extrabold text-blue-600 block uppercase tracking-wider select-none">Your Spoken Voice Transcript:</span>
@@ -901,7 +881,6 @@ export default function ReadingWritingView({
                   </div>
                 )}
 
-                {/* Verification triggers */}
                 {vocalTranscript && !readingChecked && (
                   <button
                     onClick={() => verifyReading(readingItem.sentence)}
@@ -912,7 +891,6 @@ export default function ReadingWritingView({
                   </button>
                 )}
 
-                {/* Match feedback displays */}
                 {readingChecked && (
                   <div className="space-y-4 animate-fade-in font-sans">
                     {readingPassed ? (
@@ -921,7 +899,7 @@ export default function ReadingWritingView({
                         <div>
                           <h4 className="font-bold text-sm">Perfect Accuracy Match!</h4>
                           <p className="text-xs text-emerald-700 leading-normal">
-                            You read the sentence clearly and matched the USCIS naturalization oral thresholds cleanly.
+                            You read the sentence clearly. Great job!
                           </p>
                         </div>
                       </div>
@@ -931,13 +909,12 @@ export default function ReadingWritingView({
                         <div>
                           <h4 className="font-bold text-sm">Needs Slower Review</h4>
                           <p className="text-xs text-amber-700 leading-normal">
-                            Your pronunciation match score falls short. Re-listen to the speaking help and read again, aiming for crisp enunciation.
+                            Not quite. Try listening to the pronunciation first, then read it again.
                           </p>
                         </div>
                       </div>
                     )}
 
-                    {/* Score point awards alerts */}
                     {pointsAwarded && (
                       <div className="p-3 bg-primary-container text-primary text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm border border-primary/10 select-none max-w-max">
                         <Sparkles className="w-4 h-4 text-primary animate-bounce shrink-0" />
@@ -950,7 +927,6 @@ export default function ReadingWritingView({
                       {renderReadingWordFeedback(readingItem.sentence)}
                     </div>
 
-                    {/* Navigation panel */}
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={() => {
@@ -979,7 +955,6 @@ export default function ReadingWritingView({
                 <span className="font-mono text-[#1e3a8a] font-semibold">SENTENCE {writingIdx + 1} OF {data?.writing.length || 1}</span>
               </div>
 
-              {/* Dictation Voice trigger */}
               <div className="flex flex-col items-center justify-center p-8 bg-[#fdfeff] border border-blue-100 rounded-xl text-center space-y-4">
                 <button
                   onClick={() => handleSpeakSample(writingItem.audioText)}
@@ -1000,7 +975,6 @@ export default function ReadingWritingView({
                 </div>
               </div>
 
-              {/* Response typing area */}
               <div className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block select-none">Type Dictated Sentence:</label>
@@ -1024,7 +998,6 @@ export default function ReadingWritingView({
                   </button>
                 )}
 
-                {/* Verdict panels */}
                 {writingChecked && (
                   <div className="space-y-4 animate-fade-in font-sans">
                     {writingPassed ? (
@@ -1033,7 +1006,7 @@ export default function ReadingWritingView({
                         <div>
                           <h4 className="font-bold text-sm">Perfect Writing Master Class!</h4>
                           <p className="text-xs text-emerald-700 leading-normal">
-                            Your spelling and word order are perfect. You are fully prepared for this portion of the USCIS interview.
+                            Perfect. Your spelling and word order are correct.
                           </p>
                         </div>
                       </div>
@@ -1049,7 +1022,6 @@ export default function ReadingWritingView({
                       </div>
                     )}
 
-                    {/* Score point awards alerts */}
                     {pointsAwarded && (
                       <div className="p-3 bg-primary-container text-primary text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm border border-primary/10 select-none max-w-max">
                         <Sparkles className="w-4 h-4 text-primary animate-bounce shrink-0" />
@@ -1057,7 +1029,6 @@ export default function ReadingWritingView({
                       </div>
                     )}
 
-                    {/* Comparison feedback columns */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 select-none">
                       <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl space-y-1">
                         <span className="text-[9px] font-extrabold text-blue-600 uppercase block tracking-wider">Correct Sentence Model:</span>
@@ -1071,7 +1042,6 @@ export default function ReadingWritingView({
                       </div>
                     </div>
 
-                    {/* Navigation panel */}
                     <div className="flex justify-between items-center pt-2">
                       <button
                         onClick={() => {

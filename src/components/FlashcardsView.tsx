@@ -94,7 +94,6 @@ export default function FlashcardsView({
     setShowFeedback(null);
   };
 
-  // Mark the card as mastered and move to the next card.
   const handleKnowIt = () => {
     if (!currentCard) return;
     setIsFlipped(true); // show answer briefly
@@ -109,7 +108,6 @@ export default function FlashcardsView({
     }, 1000);
   };
 
-  // Keep the card in the review queue and move to the next card.
   const handleReviewLater = () => {
     if (!currentCard) return;
     setIsFlipped(true); // show answer briefly
@@ -178,7 +176,7 @@ export default function FlashcardsView({
           <p className="font-semibold block text-gray-500">No cards in your selected "{cardFilter}" view.</p>
           <p className="text-[10px] max-w-xs mx-auto text-gray-400">
             {cardFilter === "review"
-              ? "Wonderful job! You mastered every flashcard in this topic area. Go to Progress overview or launch practice tests."
+              ? "You've mastered all the cards in this category. Check your progress or start a practice quiz."
               : cardFilter === "mastered"
               ? "You haven't mastered any flashcards in this category yet. Click 'Know It' on study cards to move them here!"
               : "Try switching categories or piles to view available materials."}
